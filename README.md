@@ -1,10 +1,11 @@
-# adx — agentic-developer-experience
+# adx: Agentic Development Experience
 
-Consolidated configuration for the tools that make terminal AI coding agents
-(like [pi](https://github.com/earendil-works/pi-coding-agent)) pleasant to use.
-Every tool's config lives in this repo and is **symlinked** into place. Tool
-installs and symlinks are both driven by [`mise bootstrap`](https://mise.jdx.dev/bootstrap.html)
-via [`mise.toml`](./mise.toml) — one command sets up a fresh machine.
+This is the configuration for the tools I use for agent driven development. 
+
+I'm trending towards doing as much in the terminal as I can and biasing towards tools 
+with high levels of customizability. 
+
+Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 
 ## What's inside
 
@@ -22,32 +23,25 @@ via [`mise.toml`](./mise.toml) — one command sets up a fresh machine.
 The CLI tools (herdr, neovim, hunk, ghui) are declared in
 [`mise/adx.toml`](./mise/adx.toml), which is symlinked to
 `~/.config/mise/conf.d/adx.toml`. mise loads `conf.d/*.toml` into the **global**
-config, so the tools are active in every directory — not just this repo — without
-touching your personal `~/.config/mise/config.toml`. `mise bootstrap` installs
-them from the merged config.
+config, so the tools are active in every directory, not just this repo, and
+your personal `~/.config/mise/config.toml` stays untouched. `mise bootstrap`
+installs them from the merged config.
 
-Only **config** is tracked — runtime files (logs, sockets, `state.json`,
-caches, `session.json`) are deliberately left out.
+Only config is tracked. Runtime files (logs, sockets, `state.json`, caches,
+`session.json`) stay out.
 
 ## Install
 
-From a fresh clone, run the bootstrap script — it installs mise if missing,
-trusts the repo, and runs `mise bootstrap`. It's idempotent, so re-running is
-safe:
+From a fresh clone, run the install script. It installs mise if missing,
+trusts the repo, and runs `mise bootstrap`. Re-running is safe:
 
 ```sh
 ./install.sh
 ```
 
-Already have a recent mise? You can skip the script and run it directly:
+The bootstrap process...
 
-```sh
-mise trust -q && mise bootstrap --yes --force-dotfiles
-```
-
-`mise bootstrap` (see [the steps](https://mise.jdx.dev/bootstrap.html#how-it-runs)):
-
-1. applies `[dotfiles]` — including the `conf.d/adx.toml` global-tools link,
+1. applies `[dotfiles]`, including the `conf.d/adx.toml` global-tools link,
 2. installs those tools (herdr, neovim, hunk, ghui) into the global config,
 3. runs the post-tools hook to install the Ghostty cask.
 
@@ -82,9 +76,9 @@ which pi does not interpret as a newline. The packaged Ghostty config remaps it:
 keybind = shift+enter=text:"\n"
 ```
 
-This sends a raw newline (`\n`), which pi receives as `ctrl+j` — already mapped
-to `tui.input.newLine`. As a result Shift+Enter inserts a newline while plain
-Enter still submits.
+This sends a raw newline (`\n`), which pi receives as `ctrl+j`, already mapped
+to `tui.input.newLine`. So Shift+Enter inserts a newline while plain Enter
+still submits.
 
 ### ghui "open in editor" → nvim + Diffview
 
@@ -98,4 +92,4 @@ In ghui, press `e` on a pull request to hand it off to your editor. The packaged
 This checks out the PR branch in its local clone and opens the diff against the
 base branch using [`diffview.nvim`](./nvim/lua/plugins/diffview.lua), which the
 packaged LazyVim config installs. `repoPaths` maps `:owner/:repo` to
-`~/Code/:repo` — adjust it in `ghui/config.json` if you keep clones elsewhere.
+`~/Code/:repo`; adjust it in `ghui/config.json` if you keep clones elsewhere.
