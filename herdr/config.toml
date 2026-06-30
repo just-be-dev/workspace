@@ -142,6 +142,7 @@ pid=$(printf '%s' "$out" | jq -r '.result.pane.pane_id')
 # Background notification popup delivery
 agent_panel_scope = "all"
 show_agent_labels_on_pane_borders = true
+agent_panel_sort = "spaces"
 [ui.toast]
 # off = disable pop-up notifications
 # herdr = show in-app toasts
