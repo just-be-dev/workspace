@@ -18,6 +18,8 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `hunk/config.toml`  | [hunk](https://github.com/modem-dev/hunk) | `mise/workspace.toml` -> `hunk` | `~/.config/hunk/config.toml` |
 | `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi-coding-agent) | `mise/workspace.toml` -> `npm:@earendil-works/pi-coding-agent` | `~/.pi/agent/settings.json` |
 | `pi/agent/extensions/`   | pi extensions | (config only) | `~/.pi/agent/extensions` |
+| `skills/effect-setup/`   | [agent skill](https://github.com/anthropics/skills) | (config only) | `~/.agents/skills/effect-setup` |
+| `skills/mise-setup/`     | agent skill | (config only) | `~/.agents/skills/mise-setup` |
 | `mise/workspace.toml`     | (tool list) | — | `~/.config/mise/conf.d/workspace.toml` |
 
 ### Global tools
@@ -37,6 +39,12 @@ package list) and the `extensions/` directory. Secrets and runtime state —
 `auth.json`, `sessions/`, `npm/`, `trust.json` — are deliberately left out. The
 pi binary itself is installed by `mise bootstrap` (via `mise/workspace.toml`), but you
 still need to authenticate it yourself — `auth.json` is never tracked.
+
+**Skills** live in the shared `~/.agents/skills/` directory (read by pi and other
+agents). That directory also holds skills installed by a skill manager, so each
+tracked skill under [`skills/`](./skills) is symlinked individually rather than
+linking the whole directory. Add a skill by dropping its folder in `skills/` and
+adding a matching `[dotfiles]` entry in [`mise.toml`](./mise.toml).
 
 ## Install
 

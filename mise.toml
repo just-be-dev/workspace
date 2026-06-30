@@ -55,3 +55,8 @@ fi
 # extensions dir. auth.json, sessions/, npm/, trust.json, etc. stay untracked.
 "~/.pi/agent/settings.json" = "pi/agent/settings.json"
 "~/.pi/agent/extensions" = "pi/agent/extensions"
+# Agent skills live in the shared ~/.agents/skills dir (read by pi and other
+# agents). That dir also holds skill-manager-installed skills, so we link each
+# tracked skill individually rather than symlinking the whole directory.
+"~/.agents/skills/effect-setup" = "skills/effect-setup"
+"~/.agents/skills/mise-setup" = "skills/mise-setup"
