@@ -81,6 +81,18 @@ pid=$(printf '%s' "$out" | jq -r '.result.pane.pane_id')
 [ -n "$pid" ] && "$B" pane run "$pid" nvim
 '''
 
+# prefix+d: open hunk in a vertical (side-by-side) split.
+[[keys.command]]
+key = "prefix+d"
+type = "shell"
+description = "open hunk in a vertical split"
+command = '''
+B="${HERDR_BIN_PATH:-herdr}"
+out=$("$B" pane split --current --direction right --focus)
+pid=$(printf '%s' "$out" | jq -r '.result.pane.pane_id')
+[ -n "$pid" ] && "$B" pane run "$pid" hunk diff .
+'''
+
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.
 # [keys.indexed]
