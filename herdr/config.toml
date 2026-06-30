@@ -30,7 +30,8 @@ prefix = "ctrl+a"
 switch_workspace = "prefix+ctrl+1..9"
 # close_tab = "prefix+shift+x"
 # rename_pane = "prefix+shift+p"
-# edit_scrollback = "prefix+e"
+# Free prefix+e from edit_scrollback so the custom command below can use it.
+edit_scrollback = ""
 # focus_pane_left = "prefix+h"
 # focus_pane_down = "prefix+j"
 # focus_pane_up = "prefix+k"
@@ -61,6 +62,20 @@ switch_workspace = "prefix+ctrl+1..9"
 # key = "prefix+alt+g"
 # type = "pane"
 # command = "lazygit"
+
+# prefix+e: open nvim in a vertical (side-by-side) split.
+# pane split has no run-command flag, so we split (focusing the new pane),
+# grab the new pane id from the JSON response, then run nvim in it.
+[[keys.command]]
+key = "prefix+e"
+type = "shell"
+description = "open nvim in a vertical split"
+command = '''
+B="${HERDR_BIN_PATH:-herdr}"
+out=$("$B" pane split --current --direction right --focus)
+pid=$(printf '%s' "$out" | grep -oE '"(pane_)?id" *: *"[^"]+"' | head -n1 | sed -E 's/.*"([^"]+)"$/\1/')
+[ -n "$pid" ] && "$B" pane run "$pid" nvim
+'''
 
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.
