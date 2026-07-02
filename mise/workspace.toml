@@ -10,3 +10,4 @@ neovim = "latest"                                # LazyVim runs on this
 hunk = "latest"                                  # aqua:modem-dev/hunk — review-first diff viewer
 "npm:@kitlangton/ghui" = "latest"                # GitHub PR TUI ("open in editor" -> nvim)
 "npm:@earendil-works/pi-coding-agent" = "latest" # pi — the agent harness (config tracked under pi/)
+"npm:@anthropic-ai/claude-code" = "latest"       # Claude Code CLI (provides `claude`)
