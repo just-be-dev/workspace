@@ -11,8 +11,8 @@ type ExtensionAPI = {
 	): void;
 };
 
-export default function (pi: ExtensionAPI) {
-	pi.registerCommand("clear", {
+export default function (omp: ExtensionAPI) {
+	omp.registerCommand("clear", {
 		description: "Alias for /new — start a new session",
 		handler: async (_args: string, ctx: { newSession(): Promise<void> }) => {
 			await ctx.newSession();

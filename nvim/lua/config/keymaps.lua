@@ -49,7 +49,7 @@ local function get_visual_selection()
   return table.concat(lines, "\n"), start_line, end_line
 end
 
-local function build_pi_prompt(instruction, selection, start_line, end_line)
+local function build_omp_prompt(instruction, selection, start_line, end_line)
   local abs_file = vim.fn.expand("%:p")
   local file = vim.fn.fnamemodify(abs_file, ":.")
   local ft = vim.bo.filetype ~= "" and vim.bo.filetype or "text"
@@ -76,7 +76,7 @@ Please inspect the file directly if needed; don't rely only on this snippet.
   )
 end
 
-local function copy_selection_for_pi()
+local function copy_selection_for_omp()
   local selection, start_line, end_line = get_visual_selection()
   if not selection or selection == "" then
     vim.notify("No visual selection found", vim.log.levels.WARN)
@@ -88,15 +88,15 @@ local function copy_selection_for_pi()
       return
     end
 
-    local prompt = build_pi_prompt(instruction, selection, start_line, end_line)
+    local prompt = build_omp_prompt(instruction, selection, start_line, end_line)
     vim.fn.setreg("+", prompt)
-    vim.notify("Copied selection as prompt")
+    vim.notify("Copied selection as OMP prompt")
   end)
 end
 
-_G.pi_copy_selection_for_pi = copy_selection_for_pi
+_G.omp_copy_selection_for_omp = copy_selection_for_omp
 
-vim.keymap.set("x", "<leader>as", ":<C-U>lua _G.pi_copy_selection_for_pi()<CR>", {
-  desc = "Copy selection as prompt",
+vim.keymap.set("x", "<leader>as", ":<C-U>lua _G.omp_copy_selection_for_omp()<CR>", {
+  desc = "Copy selection as OMP prompt",
   silent = true,
 })

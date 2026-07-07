@@ -51,11 +51,11 @@ fi
 "~/.config/ghostty/config" = "ghostty/config"
 "~/.config/ghui/config.json" = "ghui/config.json"
 "~/.config/hunk/config.toml" = "hunk/config.toml"
-# pi (agent harness). Only non-secret config is tracked: settings.json and the
-# extensions dir. auth.json, sessions/, npm/, trust.json, etc. stay untracked.
-"~/.pi/agent/settings.json" = "pi/agent/settings.json"
-"~/.pi/agent/extensions" = "pi/agent/extensions"
-# Agent skills live in the shared ~/.agents/skills dir (read by pi and other
+# omp (Oh My Pi). Only non-secret config is tracked; credentials and runtime
+# state stay in ~/.omp/agent/agent.db and related files.
+"~/.omp/agent/config.yml" = "omp/agent/config.yml"
+"~/.omp/agent/extensions" = "omp/agent/extensions"
+# Agent skills live in the shared ~/.agents/skills dir (read by omp and other
 # agents). That dir also holds skill-manager-installed skills, so we link each
 # tracked skill individually rather than symlinking the whole directory.
 "~/.agents/skills/effect-setup" = "skills/effect-setup"

@@ -51,8 +51,8 @@ function parseOption(option: string): ThinkingLevel | undefined {
 	return match ? normalizeLevel(match[1]) : undefined;
 }
 
-export default function effort(pi: ExtensionAPI) {
-	pi.registerCommand("effort", {
+export default function effort(omp: ExtensionAPI) {
+	omp.registerCommand("effort", {
 		description: "Change the model thinking/effort level",
 		getArgumentCompletions: (prefix) => {
 			const normalized = prefix.trim().toLowerCase();
@@ -70,8 +70,8 @@ export default function effort(pi: ExtensionAPI) {
 			const requested = normalizeLevel(args);
 
 			if (requested) {
-				pi.setThinkingLevel(requested);
-				const actual = pi.getThinkingLevel();
+				omp.setThinkingLevel(requested);
+				const actual = omp.getThinkingLevel();
 				const suffix =
 					actual === requested
 						? ""
@@ -93,7 +93,7 @@ export default function effort(pi: ExtensionAPI) {
 				return;
 			}
 
-			const current = pi.getThinkingLevel();
+			const current = omp.getThinkingLevel();
 			const choice = await ctx.ui.select(
 				`Choose model effort/thinking level (current: ${current})`,
 				LEVELS.map(({ level, description }) =>
@@ -111,8 +111,8 @@ export default function effort(pi: ExtensionAPI) {
 				return;
 			}
 
-			pi.setThinkingLevel(selected);
-			const actual = pi.getThinkingLevel();
+			omp.setThinkingLevel(selected);
+			const actual = omp.getThinkingLevel();
 			const suffix =
 				actual === selected
 					? ""
