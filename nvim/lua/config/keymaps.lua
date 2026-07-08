@@ -100,3 +100,8 @@ vim.keymap.set("x", "<leader>as", ":<C-U>lua _G.omp_copy_selection_for_omp()<CR>
   desc = "Copy selection as OMP prompt",
   silent = true,
 })
+
+vim.keymap.set("x", "<leader>ai", ":<C-U>Ai selection<CR>", {
+  desc = "Ask AI about selection",
+  silent = true,
+})
