@@ -8,6 +8,7 @@
 herdr = "latest"                                 # github:ogulcancelik/herdr — terminal agent multiplexer
 neovim = "latest"                                # LazyVim runs on this
 hunk = "latest"                                  # aqua:modem-dev/hunk — review-first diff viewer
+gh = "latest"                                    # GitHub CLI
 "npm:@kitlangton/ghui" = "latest"                # GitHub PR TUI ("open in editor" -> nvim)
 "npm:@anthropic-ai/claude-code" = "latest"       # Claude Code CLI (provides `claude`)
 "github:can1357/oh-my-pi" = "latest"             # omp — Oh My Pi agent CLI (config tracked under omp/)
