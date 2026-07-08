@@ -55,6 +55,10 @@ fi
 # state stay in ~/.omp/agent/agent.db and related files.
 "~/.omp/agent/config.yml" = "omp/agent/config.yml"
 "~/.omp/agent/extensions" = "omp/agent/extensions"
+# pi (secondary agent harness). Only non-secret config is tracked: settings.json
+# and the extensions dir. auth.json, sessions/, npm/, trust.json, etc. stay untracked.
+"~/.pi/agent/settings.json" = "pi/agent/settings.json"
+"~/.pi/agent/extensions" = "pi/agent/extensions"
 # Agent skills live in the shared ~/.agents/skills dir (read by omp and other
 # agents). That dir also holds skill-manager-installed skills, so we link each
 # tracked skill individually rather than symlinking the whole directory.

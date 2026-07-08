@@ -18,13 +18,15 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `hunk/config.toml`  | [hunk](https://github.com/modem-dev/hunk) | `mise/workspace.toml` -> `hunk` | `~/.config/hunk/config.toml` |
 | `omp/agent/config.yml`   | [omp](https://omp.sh) | `mise/workspace.toml` -> `github:can1357/oh-my-pi` | `~/.omp/agent/config.yml` |
 | `omp/agent/extensions/`  | omp extensions | (config only) | `~/.omp/agent/extensions` |
+| `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi-coding-agent) | `mise/workspace.toml` -> `npm:@earendil-works/pi-coding-agent` | `~/.pi/agent/settings.json` |
+| `pi/agent/extensions/`   | pi extensions | (config only) | `~/.pi/agent/extensions` |
 | `skills/effect-setup/`   | [agent skill](https://github.com/anthropics/skills) | (config only) | `~/.agents/skills/effect-setup` |
 | `skills/mise-setup/`     | agent skill | (config only) | `~/.agents/skills/mise-setup` |
 | `mise/workspace.toml`     | (tool list) | — | `~/.config/mise/conf.d/workspace.toml` |
 
 ### Global tools
 
-The CLI tools (herdr, neovim, hunk, ghui, omp) are declared in
+The CLI tools (herdr, neovim, hunk, ghui, omp, pi) are declared in
 [`mise/workspace.toml`](./mise/workspace.toml), which is symlinked to
 `~/.config/mise/conf.d/workspace.toml`. mise loads `conf.d/*.toml` into the **global**
 config, so the tools are active in every directory, not just this repo, and
@@ -34,12 +36,17 @@ installs them from the merged config.
 Only config is tracked. Runtime files (logs, sockets, `state.json`, caches,
 `session.json`) stay out.
 
-For **omp**, only non-secret config is tracked: `config.yml` and the
-`extensions/` directory. OAuth credentials and runtime state stay in
-`~/.omp/agent/agent.db` and related files; authenticate with `/login` or
-provider environment variables after bootstrap.
+**omp** is the default agent setup. Only non-secret config is tracked:
+`config.yml` and the `extensions/` directory. OAuth credentials and runtime
+state stay in `~/.omp/agent/agent.db` and related files; authenticate with
+`/login` or provider environment variables after bootstrap.
 
-**Skills** live in the shared `~/.agents/skills/` directory (read by omp and other
+**pi** is also installed and configured as a secondary agent. Its tracked
+config is `settings.json` (preferences + package list) and the `extensions/`
+directory. Secrets and runtime state — `auth.json`, `sessions/`, `npm/`,
+`trust.json` — stay in `~/.pi/agent/` and are never tracked.
+
+**Skills** live in the shared `~/.agents/skills/` directory (read by omp, pi, and other
 agents). That directory also holds skills installed by a skill manager, so each
 tracked skill under [`skills/`](./skills) is symlinked individually rather than
 linking the whole directory. Add a skill by dropping its folder in `skills/` and
@@ -57,7 +64,7 @@ trusts the repo, and runs `mise bootstrap`. Re-running is safe:
 The bootstrap process...
 
 1. applies `[dotfiles]`, including the `conf.d/workspace.toml` global-tools link,
-2. installs those tools (herdr, neovim, hunk, ghui, omp) into the global config,
+2. installs those tools (herdr, neovim, hunk, ghui, omp, pi) into the global config,
 3. runs the post-tools hook to install the Ghostty cask.
 
 For dotfiles which are being symlinked, the install script will back up any existing files. Otherwise running the installer would be destructive.
