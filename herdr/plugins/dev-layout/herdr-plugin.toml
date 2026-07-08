@@ -1,0 +1,12 @@
+id = "local.dev-layout"
+name = "Dev Layout"
+version = "0.1.0"
+min_herdr_version = "0.7.0"
+description = "Open the standard four-pane dev layout."
+platforms = ["macos", "linux"]
+
+[[actions]]
+id = "open"
+title = "Open dev layout"
+contexts = ["workspace", "pane"]
+command = ["bun", "open_layout.ts"]

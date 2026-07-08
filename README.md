@@ -12,6 +12,7 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | Path                | Tool | Installed by | Symlinked to |
 | ------------------- | ---- | ------------ | ------------ |
 | `herdr/config.toml` | [herdr](https://herdr.dev) | `mise/workspace.toml` -> `herdr` | `~/.config/herdr/config.toml` |
+| `herdr/plugins/dev-layout/` | Herdr plugin: four-pane dev layout | post-tools hook -> `herdr plugin link` | — |
 | `nvim/`             | [LazyVim](https://lazyvim.org) | `mise/workspace.toml` -> `neovim` | `~/.config/nvim` |
 | `ghostty/config`    | [Ghostty](https://ghostty.org) | post-tools hook (`brew --cask`) | `~/.config/ghostty/config` |
 | `ghui/config.json`  | [ghui](https://github.com/kitlangton/ghui) | `mise/workspace.toml` -> `npm:@kitlangton/ghui` | `~/.config/ghui/config.json` |
@@ -65,6 +66,6 @@ The bootstrap process...
 
 1. applies `[dotfiles]`, including the `conf.d/workspace.toml` global-tools link,
 2. installs those tools (herdr, neovim, hunk, ghui, omp, pi) into the global config,
-3. runs the post-tools hook to install the Ghostty cask.
+3. runs the post-tools hook to install the Ghostty cask and link local Herdr plugins.
 
 For dotfiles which are being symlinked, the install script will back up any existing files. Otherwise running the installer would be destructive.

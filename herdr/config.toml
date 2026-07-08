@@ -64,6 +64,13 @@ edit_scrollback = ""
 # type = "pane"
 # command = "lazygit"
 
+# prefix+shift+a: open the standard four-pane dev layout in a new tab.
+[[keys.command]]
+key = "prefix+shift+a"
+type = "plugin_action"
+description = "open the standard dev four-pane layout"
+command = "local.dev-layout.open"
+
 # prefix+e: open nvim in a vertical (side-by-side) split.
 # pane split has no run-command flag, so we split (focusing the new pane),
 # grab the new pane id from the JSON response, then run nvim in it.

@@ -38,6 +38,10 @@ elif command -v brew >/dev/null 2>&1; then
 else
   echo "skip ghostty: install Homebrew, or download from https://ghostty.org"
 fi
+
+if command -v herdr >/dev/null 2>&1; then
+  herdr plugin link "${MISE_PROJECT_ROOT:-$PWD}/herdr/plugins/dev-layout" >/dev/null
+fi
 '''
 
 # ── Config symlinks ───────────────────────────────────────────────────────────
