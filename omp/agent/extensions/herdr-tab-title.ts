@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 const MAX_TAB_LABEL_LENGTH = 28;
 
@@ -6,7 +7,6 @@ type EventHandler = (event: unknown, ctx: unknown) => void | Promise<void>;
 
 type ExtensionAPI = {
   on(event: string, handler: EventHandler): void;
-  getSessionName?(): string | undefined;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -38,12 +38,70 @@ function normalizeTitle(value: unknown): string | undefined {
   return `${normalized.slice(0, end).trimEnd()}…`;
 }
 
-function eventName(event: unknown): string | undefined {
-  if (!isRecord(event) || !("name" in event)) {
+function recordTitle(record: Record<string, unknown>): string | undefined {
+  const directTitle = normalizeTitle(record.title);
+  if (directTitle) {
+    return directTitle;
+  }
+
+  const directName = normalizeTitle(record.name);
+  if (directName) {
+    return directName;
+  }
+
+  if (isRecord(record.session)) {
+    return recordTitle(record.session);
+  }
+
+  return undefined;
+}
+
+function eventTitle(event: unknown): string | undefined {
+  return isRecord(event) ? recordTitle(event) : undefined;
+}
+
+function sessionFileTitle(ctx: unknown): string | undefined {
+  if (!isRecord(ctx) || !isRecord(ctx.sessionManager)) {
     return undefined;
   }
-  return normalizeTitle(event.name);
+
+  let sessionFile: unknown;
+  try {
+    sessionFile = ctx.sessionManager.getSessionFile?.();
+  } catch {
+    return undefined;
+  }
+  if (typeof sessionFile !== "string" || !sessionFile.startsWith("/")) {
+    return undefined;
+  }
+
+  let content: string;
+  try {
+    content = readFileSync(sessionFile, "utf8");
+  } catch {
+    return undefined;
+  }
+
+  for (const line of content.split(/\r?\n/, 20)) {
+    if (!line.trim()) {
+      continue;
+    }
+    try {
+      const entry: unknown = JSON.parse(line);
+      if (isRecord(entry)) {
+        const title = recordTitle(entry);
+        if (title) {
+          return title;
+        }
+      }
+    } catch {
+      return undefined;
+    }
+  }
+
+  return undefined;
 }
+
 
 function herdr(args: string[]) {
   return spawnSync(process.env.HERDR_BIN_PATH || "herdr", args, {
@@ -114,19 +172,29 @@ function renameHerdrTab(name: string): void {
 }
 
 export default function herdrTabTitle(omp: ExtensionAPI) {
-  omp.on("session_start", () => {
-    renameHerdrTab(normalizeTitle(omp.getSessionName?.()) || "dev layout");
+  omp.on("session_start", (event, ctx) => {
+    const name = eventTitle(event) || sessionFileTitle(ctx);
+    if (name) {
+      renameHerdrTab(name);
+    }
   });
 
-  omp.on("session_switch", () => {
-    const name = normalizeTitle(omp.getSessionName?.());
+  omp.on("session_switch", (event, ctx) => {
+    const name = eventTitle(event) || sessionFileTitle(ctx);
+    if (name) {
+      renameHerdrTab(name);
+    }
+  });
+
+  omp.on("title_change", (event) => {
+    const name = eventTitle(event);
     if (name) {
       renameHerdrTab(name);
     }
   });
 
   omp.on("session_info_changed", (event) => {
-    const name = eventName(event);
+    const name = eventTitle(event);
     if (name) {
       renameHerdrTab(name);
     }
