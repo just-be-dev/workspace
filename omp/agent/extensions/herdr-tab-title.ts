@@ -2,6 +2,12 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 const MAX_TAB_LABEL_LENGTH = 28;
+const TITLE_SYNC_DELAYS_MS = [0, 100, 500, 1500];
+
+type Timer = {
+  unref?: () => void;
+};
+
 
 type EventHandler = (event: unknown, ctx: unknown) => void | Promise<void>;
 
@@ -60,7 +66,7 @@ function eventTitle(event: unknown): string | undefined {
   return isRecord(event) ? recordTitle(event) : undefined;
 }
 
-function sessionFileTitle(ctx: unknown): string | undefined {
+function sessionFilePath(ctx: unknown): string | undefined {
   if (!isRecord(ctx) || !isRecord(ctx.sessionManager)) {
     return undefined;
   }
@@ -71,10 +77,13 @@ function sessionFileTitle(ctx: unknown): string | undefined {
   } catch {
     return undefined;
   }
-  if (typeof sessionFile !== "string" || !sessionFile.startsWith("/")) {
-    return undefined;
-  }
 
+  return typeof sessionFile === "string" && sessionFile.startsWith("/")
+    ? sessionFile
+    : undefined;
+}
+
+function titleFromSessionFile(sessionFile: string): string | undefined {
   let content: string;
   try {
     content = readFileSync(sessionFile, "utf8");
@@ -101,6 +110,12 @@ function sessionFileTitle(ctx: unknown): string | undefined {
 
   return undefined;
 }
+
+function sessionFileTitle(ctx: unknown): string | undefined {
+  const sessionFile = sessionFilePath(ctx);
+  return sessionFile ? titleFromSessionFile(sessionFile) : undefined;
+}
+
 
 
 function herdr(args: string[]) {
@@ -158,8 +173,10 @@ function currentTabId(): string | undefined {
   return tabIdFromPane();
 }
 
+let lastTabName: string | undefined;
+
 function renameHerdrTab(name: string): void {
-  if (process.env.HERDR_ENV !== "1") {
+  if (process.env.HERDR_ENV !== "1" || name === lastTabName) {
     return;
   }
 
@@ -168,35 +185,62 @@ function renameHerdrTab(name: string): void {
     return;
   }
 
-  herdr(["tab", "rename", tabId, name]);
+  const result = herdr(["tab", "rename", tabId, name]);
+  if (result.status === 0) {
+    lastTabName = name;
+  }
 }
 
+function syncTitle(name: string | undefined): void {
+  if (name) {
+    renameHerdrTab(name);
+  }
+}
+
+function syncEventOrSessionTitle(event: unknown, ctx: unknown): void {
+  syncTitle(eventTitle(event) || sessionFileTitle(ctx));
+}
+
+function scheduleSessionFileTitleSync(ctx: unknown): void {
+  const sessionFile = sessionFilePath(ctx);
+  if (!sessionFile) {
+    return;
+  }
+
+  for (const delayMs of TITLE_SYNC_DELAYS_MS) {
+    const timer = setTimeout(() => {
+      syncTitle(titleFromSessionFile(sessionFile));
+    }, delayMs) as Timer;
+    timer.unref?.();
+  }
+}
+
+function syncNowAndAfterTitleRewrites(event: unknown, ctx: unknown): void {
+  syncEventOrSessionTitle(event, ctx);
+  scheduleSessionFileTitleSync(ctx);
+}
+
+
 export default function herdrTabTitle(omp: ExtensionAPI) {
-  omp.on("session_start", (event, ctx) => {
-    const name = eventTitle(event) || sessionFileTitle(ctx);
-    if (name) {
-      renameHerdrTab(name);
-    }
+  omp.on("session_start", syncNowAndAfterTitleRewrites);
+  omp.on("session_switch", syncNowAndAfterTitleRewrites);
+
+  omp.on("agent_start", (_event, ctx) => {
+    scheduleSessionFileTitleSync(ctx);
   });
 
-  omp.on("session_switch", (event, ctx) => {
-    const name = eventTitle(event) || sessionFileTitle(ctx);
-    if (name) {
-      renameHerdrTab(name);
-    }
+  omp.on("tool_execution_start", (_event, ctx) => {
+    scheduleSessionFileTitleSync(ctx);
   });
 
-  omp.on("title_change", (event) => {
-    const name = eventTitle(event);
-    if (name) {
-      renameHerdrTab(name);
-    }
+  omp.on("tool_execution_end", (_event, ctx) => {
+    scheduleSessionFileTitleSync(ctx);
   });
 
-  omp.on("session_info_changed", (event) => {
-    const name = eventTitle(event);
-    if (name) {
-      renameHerdrTab(name);
-    }
+  omp.on("agent_end", (_event, ctx) => {
+    scheduleSessionFileTitleSync(ctx);
   });
+
+  omp.on("title_change", syncEventOrSessionTitle);
+  omp.on("session_info_changed", syncEventOrSessionTitle);
 }

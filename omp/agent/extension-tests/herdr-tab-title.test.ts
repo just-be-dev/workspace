@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, expect, test } from "bun:test";
+import { afterEach, beforeEach, expect, test, vi } from "bun:test";
 import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import herdrTabTitle from "./herdr-tab-title.ts";
+import herdrTabTitle from "../extensions/herdr-tab-title.ts";
 
 type Handler = (event?: unknown, ctx?: unknown) => void | Promise<void>;
 type HerdrCall = ["tab", "rename", string, string];
@@ -25,9 +25,12 @@ beforeEach(() => {
   for (const key of envKeys) {
     originalEnv[key] = process.env[key];
   }
+  vi.useFakeTimers();
 });
 
 afterEach(() => {
+  vi.clearAllTimers();
+  vi.useRealTimers();
   for (const key of envKeys) {
     const value = originalEnv[key];
     if (value === undefined) {
@@ -134,6 +137,65 @@ test("session_start renames from the current session file title", async () => {
 
   expect(readHerdrCalls(capturePath)).toEqual([
     ["tab", "rename", "tab-123", "Session file title"],
+  ]);
+});
+
+test("tool lifecycle events sync a rewritten session file title without title_change", async () => {
+  const { capturePath, dir } = setupHerdr();
+  const sessionFile = join(dir, "session.ndjson");
+  writeFileSync(
+    sessionFile,
+    [
+      JSON.stringify({ type: "title", title: "Stale queued title" }),
+      JSON.stringify({ type: "tool_execution_end", tool: "edit" }),
+    ].join("\n"),
+  );
+  const omp = registerExtension();
+
+  await omp.emit(
+    "tool_execution_end",
+    { type: "tool_execution_end" },
+    { sessionManager: { getSessionFile: () => sessionFile } },
+  );
+  writeFileSync(
+    sessionFile,
+    [
+      JSON.stringify({ type: "title", title: "  “Fallback\t tab\nsync!”  " }),
+      JSON.stringify({ type: "tool_execution_end", tool: "edit" }),
+    ].join("\n"),
+  );
+
+  vi.advanceTimersByTime(0);
+
+  expect(readHerdrCalls(capturePath)).toEqual([
+    ["tab", "rename", "tab-123", "Fallback tab sync"],
+  ]);
+});
+
+test("repeated session file syncs with the same title do not rename again", async () => {
+  const { capturePath, dir } = setupHerdr();
+  const sessionFile = join(dir, "session.ndjson");
+  writeFileSync(
+    sessionFile,
+    [
+      JSON.stringify({ type: "title", title: "Stable fallback title" }),
+      JSON.stringify({ type: "agent_start" }),
+    ].join("\n"),
+  );
+  const omp = registerExtension();
+  const ctx = { sessionManager: { getSessionFile: () => sessionFile } };
+
+  await omp.emit("agent_start", { type: "agent_start" }, ctx);
+  vi.advanceTimersByTime(1500);
+  expect(readHerdrCalls(capturePath)).toEqual([
+    ["tab", "rename", "tab-123", "Stable fallback title"],
+  ]);
+
+  await omp.emit("tool_execution_start", { type: "tool_execution_start" }, ctx);
+  vi.advanceTimersByTime(1500);
+
+  expect(readHerdrCalls(capturePath)).toEqual([
+    ["tab", "rename", "tab-123", "Stable fallback title"],
   ]);
 });
 
