@@ -13,3 +13,5 @@ gh = "latest"                                    # GitHub CLI
 "npm:@anthropic-ai/claude-code" = "latest"       # Claude Code CLI (provides `claude`)
 "github:can1357/oh-my-pi" = "latest"             # omp — Oh My Pi agent CLI (config tracked under omp/)
 "npm:@earendil-works/pi-coding-agent" = "latest" # pi — secondary agent harness (config tracked under pi/)
+stylua = "latest"                                # Lua formatter for nvim config
+fzf = "0.74.0"                                   # fuzzy finder
