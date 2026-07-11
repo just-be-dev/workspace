@@ -10,7 +10,7 @@ user-invocable: true
 Bootstrap or repair an Effect 4 project
 
 - **Effect 4 beta** (`effect@4.0.0-beta.x`, `@effect/platform-*`) — not Effect 3.
-- **`tsgo`** (the TypeScript native preview) for type-checking, patched for Effect via `effect-tsgo patch` from `@effect/tsgo`.
+- **`tsgo`** (TypeScript 7's native Go-based toolchain) for type-checking, patched for Effect via `effect-tsgo patch` from `@effect/tsgo`.
 - **`@effect/language-service`** as a tsconfig plugin so editors get Effect-aware diagnostics and refactors.
 - **Bare-module imports** (`import * as Effect from "effect/Effect"`), not `import { Effect } from "effect"`.
 - **`effect-solutions`** is consulted before writing Effect code — record this in `AGENTS.md`.
@@ -51,8 +51,8 @@ Target shape (versions are the house baseline; let `bun install` resolve to curr
     "prepare": "effect-tsgo patch"
   },
   "devDependencies": {
-    "@effect/tsgo": "^0.14.6",
-    "typescript": "7.0.1-rc"
+    "@effect/tsgo": "^0.19.0",
+    "typescript": "7.0.2"
   },
   "dependencies": {
     "effect": "4.0.0-beta.92"
@@ -84,7 +84,7 @@ For Bun/Node platform packages, pin to the same beta line as `effect`:
 Critical notes:
 
 - `prepare: "effect-tsgo patch"` runs automatically after `bun install`. This patches the `tsgo` binary to understand Effect's type-level constructs. Without it, `tsgo --noEmit` reports spurious errors on Effect code.
-- `tsgo` ships with `typescript@7` (now RC) — pin the latest RC (`7.0.1-rc`) as a devDependency. The old `@typescript/native-preview` package is no longer needed.
+- `tsgo` ships with stable `typescript@7` — pin the current stable release (`7.0.2`) as a devDependency. The old `@typescript/native-preview` package is no longer needed.
 - After editing `package.json`, run `bun install` so the `prepare` hook fires and patches tsgo.
 
 #### 3b. `tsconfig.json` — language service plugin
