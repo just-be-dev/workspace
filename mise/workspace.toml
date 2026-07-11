@@ -15,3 +15,4 @@ gh = "latest"                                    # GitHub CLI
 "npm:@earendil-works/pi-coding-agent" = "latest" # pi — secondary agent harness (config tracked under pi/)
 stylua = "latest"                                # Lua formatter for nvim config
 fzf = "0.74.0"                                   # fuzzy finder
+lazygit = "0.63.0"
