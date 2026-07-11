@@ -4,6 +4,9 @@
 # mise loads conf.d/*.toml into the GLOBAL config, so these tools are active in
 # every directory (not just this repo) — without editing your personal
 # ~/.config/mise/config.toml.
+[settings]
+minimum_release_age_excludes = ["github:can1357/oh-my-pi"]
+
 [tools]
 herdr = "latest"                                 # github:ogulcancelik/herdr — terminal agent multiplexer
 neovim = "latest"                                # LazyVim runs on this
