@@ -1,21 +1,22 @@
-type ExtensionAPI = {
-	registerCommand(
-		name: string,
-		command: {
-			description: string;
-			handler: (
-				args: string,
-				ctx: { newSession(): Promise<void> },
-			) => Promise<void>;
-		},
-	): void;
+type CommandContext = {
+  newSession(): Promise<void>;
 };
 
-export default function (omp: ExtensionAPI) {
-	omp.registerCommand("clear", {
-		description: "Alias for /new — start a new session",
-		handler: async (_args: string, ctx: { newSession(): Promise<void> }) => {
-			await ctx.newSession();
-		},
-	});
+type ExtensionAPI = {
+  registerCommand(
+    name: string,
+    command: {
+      description: string;
+      handler(args: string, ctx: CommandContext): Promise<void>;
+    },
+  ): void;
+};
+
+export default function clearAlias(omp: ExtensionAPI) {
+  omp.registerCommand("clear", {
+    description: "Alias for /new — start a new session",
+    handler: async (_args: string, ctx: CommandContext) => {
+      await ctx.newSession();
+    },
+  });
 }
