@@ -19,6 +19,7 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `hunk/config.toml`  | [hunk](https://github.com/modem-dev/hunk) | `mise/workspace.toml` -> `hunk` | `~/.config/hunk/config.toml` |
 | `omp/agent/config.yml`   | [omp](https://omp.sh) | `mise/workspace.toml` -> `github:can1357/oh-my-pi` | `~/.omp/agent/config.yml` |
 | `omp/agent/extensions/`  | omp extensions | (config only) | `~/.omp/agent/extensions` |
+| `omp/plugins/pi-claude-bridge/` + `.tgz` | OMP plugin: Claude Code provider + AskClaude tool | post-tools hook -> `npm install` packaged local plugin | `~/.omp/plugins/node_modules/pi-claude-bridge` |
 | `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi-coding-agent) | `mise/workspace.toml` -> `npm:@earendil-works/pi-coding-agent` | `~/.pi/agent/settings.json` |
 | `pi/agent/extensions/`   | pi extensions | (config only) | `~/.pi/agent/extensions` |
 | `skills/effect-setup/`   | [agent skill](https://github.com/anthropics/skills) | (config only) | `~/.agents/skills/effect-setup` |
@@ -38,9 +39,10 @@ Only config is tracked. Runtime files (logs, sockets, `state.json`, caches,
 `session.json`) stay out.
 
 **omp** is the default agent setup. Only non-secret config is tracked:
-`config.yml` and the `extensions/` directory. OAuth credentials and runtime
-state stay in `~/.omp/agent/agent.db` and related files; authenticate with
-`/login` or provider environment variables after bootstrap.
+`config.yml`, the `extensions` directory, and the local `pi-claude-bridge`
+plugin source plus packaged tarball. OAuth credentials and runtime state stay in
+`~/.omp/agent/agent.db` and related files; authenticate with `/login` or provider
+environment variables after bootstrap.
 
 **pi** is also installed and configured as a secondary agent. Its tracked
 config is `settings.json` (preferences + package list) and the `extensions/`
@@ -66,6 +68,6 @@ The bootstrap process...
 
 1. applies `[dotfiles]`, including the `conf.d/workspace.toml` global-tools link,
 2. installs those tools (herdr, neovim, hunk, ghui, omp, pi) into the global config,
-3. runs the post-tools hook to install the Ghostty cask and link local Herdr plugins.
+3. runs the post-tools hook to install the Ghostty cask, link local Herdr plugins, and install local omp plugins.
 
 For dotfiles which are being symlinked, the install script will back up any existing files. Otherwise running the installer would be destructive.

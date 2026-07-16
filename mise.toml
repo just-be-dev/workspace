@@ -43,6 +43,12 @@ fi
 if command -v herdr >/dev/null 2>&1; then
   herdr plugin link "${MISE_PROJECT_ROOT:-$PWD}/herdr/plugins/dev-layout" >/dev/null
 fi
+
+if command -v npm >/dev/null 2>&1; then
+  omp_plugins_dir="$HOME/.omp/plugins"
+  mkdir -p "$omp_plugins_dir"
+  npm --prefix "$omp_plugins_dir" install "${MISE_PROJECT_ROOT:-$PWD}/omp/plugins/pi-claude-bridge-0.6.2-omp.1.tgz" --save --ignore-scripts --no-audit --no-fund >/dev/null
+fi
 '''
 
 # ── Config symlinks ───────────────────────────────────────────────────────────
