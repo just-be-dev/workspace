@@ -6,3 +6,5 @@ theme:
 setupVersion: 1
 modelRoles: 
   default: openai-codex/gpt-5.5:high
+  designer: openai-codex/gpt-5.6-sol
+defaultThinkingLevel: auto
