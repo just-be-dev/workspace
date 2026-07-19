@@ -25,8 +25,10 @@ fzf = { version = "0.74.0", os = ["macos"] }
 lazygit = { version = "0.63.0", os = ["macos"] }
 
 [bootstrap.packages]
-"pacman:extra/fish" = "latest"
-"pacman:omarchy/omarchy-fish" = "latest"
+# Bare package names (no repo/ prefix): mise checks installs with `pacman -Q`,
+# which rejects repo-qualified names and would report them missing forever.
+"pacman:fish" = "latest"
+"pacman:omarchy-fish" = "latest"
 # Cask (no `ghostty` formula — don't add one); macOS-only, auto-skipped on Linux.
 "brew-cask:ghostty" = "latest"
 
