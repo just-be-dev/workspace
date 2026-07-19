@@ -1,22 +1,15 @@
 #!/usr/bin/env bash
-# workspace
-#
-# Idempotent bootstrap: ensure mise is installed, PREVIEW the plan, then let
-# `mise bootstrap` install every tool and link every packaged config (see
-# mise.toml). Safe to re-run — mise converges each step and skips work done.
-#
-# Nothing on your system is mutated before the preview + confirmation below,
-# except installing mise itself if it's missing.
+# Bootstrap the workspace: install mise, preview the plan, then apply.
+# Nothing is mutated before you confirm (except installing mise itself).
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 1. Ensure mise is on PATH, installing it if missing (its installer is idempotent).
+# Install mise if missing.
 if ! command -v mise >/dev/null 2>&1; then
 	echo "mise not found — installing from https://mise.run"
 	curl -fsSL https://mise.run | sh
 fi
-# mise's default install location, in case the current shell hasn't picked it up.
 export PATH="${MISE_INSTALL_PATH:-$HOME/.local/bin}:$PATH"
 if ! command -v mise >/dev/null 2>&1; then
 	echo "error: mise install did not land on PATH; open a new shell and re-run." >&2
@@ -24,21 +17,15 @@ if ! command -v mise >/dev/null 2>&1; then
 fi
 
 cd "$REPO_DIR"
-# Trusting the repo config is a prerequisite for mise to read it at all (the
-# dry-run below included). It only writes to mise's trust store — none of your
-# configs or system packages are touched.
-mise trust -q
+mise trust -q  # required before mise reads the config
 
-# 2. Preview. Show the per-item plan — which tools and dotfiles are already
-#    applied vs. still pending — changing nothing. Unlike --dry-run, this does
-#    not dump the post-tools hook's shell body.
+# Preview — changes nothing.
 echo "== bootstrap plan (no changes will be made) =="
 mise bootstrap status || true
 echo "=============================================="
 
-# 3. Confirm before mutating. Set WORKSPACE_ASSUME_YES=1 for unattended runs.
-#    We read the answer from /dev/tty so this works even under `curl … | bash`;
-#    if there's no usable terminal, stop rather than apply without consent.
+# Confirm. WORKSPACE_ASSUME_YES=1 skips the prompt; read from /dev/tty so it
+# still works under `curl … | bash`.
 if [ "${WORKSPACE_ASSUME_YES:-}" != "1" ]; then
 	printf 'Apply this plan? [y/N] '
 	if ! { read -r reply </dev/tty; } 2>/dev/null; then
@@ -55,9 +42,6 @@ if [ "${WORKSPACE_ASSUME_YES:-}" != "1" ]; then
 	esac
 fi
 
-# 4. Apply for real. `mise bootstrap` installs [tools] into the global config, so
-#    they're available everywhere. --force-dotfiles lets managed symlinks replace
-#    the pre-existing stock nvim files; the symlink-each / glob [dotfiles] entries
-#    overlay additively, so omarchy's own files in those directories are left
-#    untouched. System packages may prompt for sudo.
-exec mise bootstrap --yes --force-dotfiles "$@"
+# --force-dotfiles lets our symlinks replace the stock nvim files. --quiet drops
+# mise's echo of each hook script. System packages may prompt for sudo.
+exec mise bootstrap --yes --quiet --force-dotfiles "$@"

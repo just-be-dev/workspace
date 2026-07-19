@@ -1,23 +1,11 @@
-# workspace
-#
-# Single entry point. From a clone, run:
-#
+# workspace — single entry point. From a clone:
 #     mise trust -q && mise bootstrap --yes --force-dotfiles
-#
-# That symlinks every packaged config into ~/.config ([dotfiles]), installs the
-# workstation tools ([tools] below), and runs the post-tools hook (herdr/omp
-# plugins plus the fish shell — brew on macOS, omarchy-fish via pacman on Linux).
-#
-# `mise bootstrap` and the [dotfiles] section are experimental. min_version is
-# pinned to a known-good mise; bump it after `mise self-update`.
+# min_version pins a known-good mise; bump after `mise self-update`.
 min_version = "2026.6.14"
 
 [settings]
-# `mise bootstrap` and [dotfiles] are experimental — opt in here so the repo is
-# self-contained (no global setting required).
-experimental = true
+experimental = true # required for `mise bootstrap` + [dotfiles]
 pin = true
-# String-form [dotfiles] entries below default to symlinks.
 dotfiles.default_mode = "symlink"
 minimum_release_age_excludes = ["github:can1357/oh-my-pi"]
 
@@ -29,31 +17,24 @@ hunk = "latest"                                  # aqua:modem-dev/hunk — revie
 "npm:@earendil-works/pi-coding-agent" = "latest" # pi — secondary agent harness (config tracked under pi/)
 stylua = "latest"                                # Lua formatter for nvim config
 
-# macOS-only. Omarchy already installs these on Linux (see its
-# omarchy-base.packages: nvim, github-cli, claude-code, fzf, lazygit), so we
-# scope them to macOS to avoid mise shadowing the system copies.
-neovim = { version = "latest", os = ["macos"] }                          # LazyVim runs on this
-gh = { version = "latest", os = ["macos"] }                              # GitHub CLI
-"npm:@anthropic-ai/claude-code" = { version = "latest", os = ["macos"] } # Claude Code CLI (provides `claude`)
-fzf = { version = "0.74.0", os = ["macos"] }                             # fuzzy finder
+# macOS-only: omarchy already provides these on Linux, so scoping avoids shadowing.
+neovim = { version = "latest", os = ["macos"] }
+gh = { version = "latest", os = ["macos"] }
+"npm:@anthropic-ai/claude-code" = { version = "latest", os = ["macos"] }
+fzf = { version = "0.74.0", os = ["macos"] }
 lazygit = { version = "0.63.0", os = ["macos"] }
 
 [bootstrap.packages]
 "pacman:extra/fish" = "latest"
 "pacman:omarchy/omarchy-fish" = "latest"
-# Ghostty ships as a Homebrew cask (there is no `ghostty` formula), and the cask
-# backend is macOS-only, so mise auto-skips this on Linux where omarchy provides
-# Ghostty. Do NOT add a `brew:ghostty` formula entry — it 404s on every platform.
+# Cask (no `ghostty` formula — don't add one); macOS-only, auto-skipped on Linux.
 "brew-cask:ghostty" = "latest"
 
 [bootstrap.hooks.post-tools]
 run = '''
-# herdr dev-layout plugin. `herdr plugin link` registers the plugin over the
-# running herdr server's socket, so on a fresh bootstrap (no server yet) it fails
-# with a bare "Os NotFound". If a server is already up (you're in a herdr
-# session) link against it; otherwise start a transient headless server just long
-# enough to register — the registration persists on disk afterward. Linking is a
-# convenience, so it must never fail the bootstrap.
+# herdr dev-layout plugin. `herdr plugin link` needs a running herdr server, so
+# if none is up start a transient headless one to register (persists on disk),
+# then stop it. Must never fail the bootstrap.
 if command -v herdr >/dev/null 2>&1; then
   herdr_plugin="${MISE_PROJECT_ROOT:-$PWD}/herdr/plugins/dev-layout"
   herdr_started=0
@@ -78,11 +59,8 @@ if command -v npm >/dev/null 2>&1; then
   npm --prefix "$omp_plugins_dir" install "${MISE_PROJECT_ROOT:-$PWD}/omp/plugins/pi-claude-bridge-0.6.2-omp.1.tgz" --save --ignore-scripts --no-audit --no-fund >/dev/null
 fi
 
-# fish shell. No clean mise backend exists, so (like the Ghostty cask before it)
-# we install via the platform package manager here. On Arch/Omarchy pull
-# omarchy-fish, which depends on fish and layers the omarchy fish config on top;
-# on macOS use Homebrew. --needed keeps the pacman path idempotent. No-op
-# cleanly when neither package manager is present.
+# fish shell (no mise backend). omarchy-fish on Arch layers omarchy's fish config;
+# Homebrew elsewhere.
 if command -v pacman >/dev/null 2>&1; then
   sudo pacman -S --needed --noconfirm omarchy-fish
 elif command -v fish >/dev/null 2>&1; then
@@ -93,52 +71,36 @@ else
   echo "skip fish: use pacman (Arch/Omarchy) or install Homebrew (macOS)"
 fi
 
-# Ghostty config: macOS only. On Omarchy/Linux, Ghostty ships a managed config
-# (dynamic theming, Hyprland fixes) that we intentionally leave alone, so this is
-# not a [dotfiles] entry. On macOS there is no such base, so overlay our config.
+# Ghostty config, macOS only (Linux keeps omarchy's managed config).
 if [ "$(uname)" = "Darwin" ]; then
   mkdir -p "$HOME/.config/ghostty"
   cp "${MISE_PROJECT_ROOT:-$PWD}/ghostty/config" "$HOME/.config/ghostty/config"
 fi
 '''
 
-# ── Config symlinks ───────────────────────────────────────────────────────────
-# Sources resolve relative to this file (the repo root). `mise bootstrap` /
-# `mise dotfiles apply` create the links; existing real files are reported as
-# conflicts unless you pass --force-dotfiles.
+# Config symlinks. Sources are relative to this file; --force-dotfiles replaces
+# existing real files.
 [dotfiles]
 "~/.config/herdr/config.toml" = "herdr/config.toml"
-# nvim runs atop omarchy's base config, so we overlay only our own files, leaving
-# omarchy's siblings in each dir alone. The top-level glob catches init.lua while
-# skipping the nvim-managed lazy-lock.json / lazyvim.json lockfiles (symlink-each
-# can't filter those out by extension). lua/config and lua/plugins hold only our
-# .lua files, so symlink-each owns them wholesale (options.lua is omarchy's to
-# own, so it's kept out of the repo).
+# nvim overlays onto omarchy's base: *.lua links init.lua but skips the
+# nvim-managed *.json lockfiles; symlink-each owns our lua/config + lua/plugins
+# files, leaving omarchy's (options.lua, themes) in place.
 "~/.config/nvim/*.lua"       = "nvim/*.lua"
 "~/.config/nvim/lua/config"  = { source = "nvim/lua/config", mode = "symlink-each" }
 "~/.config/nvim/lua/plugins" = { source = "nvim/lua/plugins", mode = "symlink-each" }
-# ghostty/config is intentionally NOT linked here. [dotfiles] entries can't be
-# scoped by OS, and on Omarchy/Linux the live ~/.config/ghostty/config is a
-# managed base (dynamic theming, Hyprland tweaks) we must leave untouched. We
-# copy our config only on macOS via the post-tools hook below.
+# ghostty NOT linked: [dotfiles] can't be OS-scoped and Linux keeps omarchy's
+# config. Copied on macOS via the post-tools hook above.
 "~/.config/ghui/config.json" = "ghui/config.json"
 "~/.config/hunk/config.toml" = "hunk/config.toml"
-# omp (Oh My Pi). Only non-secret config is tracked; credentials and runtime
-# state stay in ~/.omp/agent/agent.db and related files. The extensions dir uses
-# symlink-each so we overlay our tracked extensions file-by-file without
-# clobbering any that a tool (e.g. herdr) or omarchy drops in alongside them.
+# omp: non-secret config only (creds/state stay in ~/.omp/agent/). extensions
+# uses symlink-each to overlay without clobbering tool-dropped files.
 "~/.omp/agent/config.yml" = "omp/agent/config.yml"
 "~/.omp/agent/extensions" = { source = "omp/agent/extensions", mode = "symlink-each" }
-# pi (secondary agent harness). Only non-secret config is tracked: settings.json
-# and the extensions dir. auth.json, sessions/, npm/, trust.json, etc. stay
-# untracked. extensions uses symlink-each so our tracked extensions overlay onto
-# the dir without removing tool-installed ones (e.g. omarchy-system-theme.ts).
+# pi: non-secret config only (auth.json, sessions/, etc. stay untracked).
+# extensions uses symlink-each to overlay (leaves e.g. omarchy-system-theme.ts).
 "~/.pi/agent/settings.json" = "pi/agent/settings.json"
 "~/.pi/agent/extensions" = { source = "pi/agent/extensions", mode = "symlink-each" }
-# Agent skills live in the shared ~/.agents/skills dir (read by omp and other
-# agents) and in ~/.claude/skills for Claude. Those dirs also hold
-# skill-manager-installed skills, so we link each tracked skill individually
-# rather than symlinking either whole directory.
+# Skills: link each individually — these dirs also hold skill-manager installs.
 "~/.agents/skills/effect-setup" = "skills/effect-setup"
 "~/.agents/skills/mise-setup" = "skills/mise-setup"
 "~/.claude/skills/effect-setup" = "skills/effect-setup"
