@@ -75,9 +75,10 @@ adding a matching `[dotfiles]` entry in [`mise.toml`](./mise.toml).
 ## Install
 
 From a fresh clone, run the install script. It installs mise if missing, then
-**prints a dry-run plan and waits for confirmation before changing anything** —
-the only thing that runs before you confirm is the mise install itself.
-Re-running is safe — mise converges each step and skips work already done:
+**prints a per-item plan (`mise bootstrap status`) and waits for confirmation
+before changing anything** — the only thing that runs before you confirm is the
+mise install itself. Re-running is safe — mise converges each step and skips
+work already done:
 
 ```sh
 ./install.sh

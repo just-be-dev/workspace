@@ -29,13 +29,12 @@ cd "$REPO_DIR"
 # configs or system packages are touched.
 mise trust -q
 
-# 2. Preview. Show exactly what would be installed and linked, changing nothing.
-#    `sudo` package lines are printed, not executed. A non-zero exit here (e.g.
-#    an unreachable package) is surfaced rather than aborting — seeing it in the
-#    preview is the whole point.
-echo "== bootstrap plan (dry run — no changes will be made) =="
-mise bootstrap --dry-run --force-dotfiles "$@" || true
-echo "======================================================="
+# 2. Preview. Show the per-item plan — which tools and dotfiles are already
+#    applied vs. still pending — changing nothing. Unlike --dry-run, this does
+#    not dump the post-tools hook's shell body.
+echo "== bootstrap plan (no changes will be made) =="
+mise bootstrap status || true
+echo "=============================================="
 
 # 3. Confirm before mutating. Set WORKSPACE_ASSUME_YES=1 for unattended runs.
 #    We read the answer from /dev/tty so this works even under `curl … | bash`;
