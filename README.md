@@ -74,15 +74,16 @@ adding a matching `[dotfiles]` entry in [`mise.toml`](./mise.toml).
 
 ## Install
 
-From a fresh clone, run the install script. It installs mise if missing, trusts
-the repo, and runs `mise bootstrap`. Re-running is safe — mise converges each
-step and skips work already done:
+From a fresh clone, run the install script. It installs mise if missing, then
+**prints a dry-run plan and waits for confirmation before changing anything** —
+the only thing that runs before you confirm is the mise install itself.
+Re-running is safe — mise converges each step and skips work already done:
 
 ```sh
 ./install.sh
 ```
 
-`mise bootstrap` then:
+Once you confirm, `mise bootstrap` runs with `--force-dotfiles` and:
 
 1. installs the `[tools]` into the global config,
 2. applies `[dotfiles]` — overlaying our configs onto any omarchy base (see
@@ -90,8 +91,9 @@ step and skips work already done:
 3. runs the post-tools hook: installs fish, links the local Herdr plugin,
    installs the local omp plugin, and (macOS only) copies the Ghostty config.
 
-The script runs with `--force-dotfiles` so managed symlinks can replace the
-pre-existing stock nvim files. The overlay entries (`symlink-each` / globs) only
-touch the files we track, so omarchy's own configs in those directories are left
-in place. If you'd rather preview first, run `mise bootstrap status` (no
-changes) or `mise bootstrap --dry-run`.
+`--force-dotfiles` lets managed symlinks replace the pre-existing stock nvim
+files; the overlay entries (`symlink-each` / globs) only touch the files we
+track, so omarchy's own configs in those directories are left in place. For
+unattended runs set `WORKSPACE_ASSUME_YES=1` to skip the prompt; to inspect
+without the script, `mise bootstrap status` and `mise bootstrap --dry-run` both
+change nothing.

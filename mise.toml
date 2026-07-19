@@ -41,8 +41,10 @@ lazygit = { version = "0.63.0", os = ["macos"] }
 [bootstrap.packages]
 "pacman:extra/fish" = "latest"
 "pacman:omarchy/omarchy-fish" = "latest"
+# Ghostty ships as a Homebrew cask (there is no `ghostty` formula), and the cask
+# backend is macOS-only, so mise auto-skips this on Linux where omarchy provides
+# Ghostty. Do NOT add a `brew:ghostty` formula entry — it 404s on every platform.
 "brew-cask:ghostty" = "latest"
-"brew:ghostty" = "latest"
 
 [bootstrap.hooks.post-tools]
 run = '''
