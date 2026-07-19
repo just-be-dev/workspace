@@ -11,32 +11,49 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 
 | Path                | Tool | Installed by | Symlinked to |
 | ------------------- | ---- | ------------ | ------------ |
-| `herdr/config.toml` | [herdr](https://herdr.dev) | `mise/workspace.toml` -> `herdr` | `~/.config/herdr/config.toml` |
+| `herdr/config.toml` | [herdr](https://herdr.dev) | `[tools]` -> `herdr` | `~/.config/herdr/config.toml` |
 | `herdr/plugins/dev-layout/` | Herdr plugin: four-pane dev layout | post-tools hook -> `herdr plugin link` | — |
-| `nvim/`             | [LazyVim](https://lazyvim.org) | `mise/workspace.toml` -> `neovim` | `~/.config/nvim` |
-| `ghostty/config`    | [Ghostty](https://ghostty.org) | post-tools hook (`brew --cask`) | `~/.config/ghostty/config` |
-| `ghui/config.json`  | [ghui](https://github.com/kitlangton/ghui) | `mise/workspace.toml` -> `npm:@kitlangton/ghui` | `~/.config/ghui/config.json` |
-| `hunk/config.toml`  | [hunk](https://github.com/modem-dev/hunk) | `mise/workspace.toml` -> `hunk` | `~/.config/hunk/config.toml` |
-| `omp/agent/config.yml`   | [omp](https://omp.sh) | `mise/workspace.toml` -> `github:can1357/oh-my-pi` | `~/.omp/agent/config.yml` |
-| `omp/agent/extensions/`  | omp extensions | (config only) | `~/.omp/agent/extensions` |
+| `nvim/`             | [LazyVim](https://lazyvim.org) | `[tools]` -> `neovim` (macOS; omarchy on Linux) | `~/.config/nvim` (overlay) |
+| `ghostty/config`    | [Ghostty](https://ghostty.org) | post-tools hook (`brew --cask`) | `~/.config/ghostty/config` (macOS only) |
+| `ghui/config.json`  | [ghui](https://github.com/kitlangton/ghui) | `[tools]` -> `npm:@kitlangton/ghui` | `~/.config/ghui/config.json` |
+| `hunk/config.toml`  | [hunk](https://github.com/modem-dev/hunk) | `[tools]` -> `hunk` | `~/.config/hunk/config.toml` |
+| `omp/agent/config.yml`   | [omp](https://omp.sh) | `[tools]` -> `github:can1357/oh-my-pi` | `~/.omp/agent/config.yml` |
+| `omp/agent/extensions/`  | omp extensions | (config only) | `~/.omp/agent/extensions` (overlay) |
 | `omp/plugins/pi-claude-bridge/` + `.tgz` | OMP plugin: Claude Code provider + AskClaude tool | post-tools hook -> `npm install` packaged local plugin | `~/.omp/plugins/node_modules/pi-claude-bridge` |
-| `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi-coding-agent) | `mise/workspace.toml` -> `npm:@earendil-works/pi-coding-agent` | `~/.pi/agent/settings.json` |
-| `pi/agent/extensions/`   | pi extensions | (config only) | `~/.pi/agent/extensions` |
+| `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi-coding-agent) | `[tools]` -> `npm:@earendil-works/pi-coding-agent` | `~/.pi/agent/settings.json` |
+| `pi/agent/extensions/`   | pi extensions | (config only) | `~/.pi/agent/extensions` (overlay) |
 | `skills/effect-setup/`   | [agent skill](https://github.com/anthropics/skills) | (config only) | `~/.agents/skills/effect-setup` |
 | `skills/mise-setup/`     | agent skill | (config only) | `~/.agents/skills/mise-setup` |
-| `mise/workspace.toml`     | (tool list) | — | `~/.config/mise/conf.d/workspace.toml` |
 
 ### Global tools
 
-The CLI tools (herdr, neovim, hunk, ghui, omp, pi) are declared in
-[`mise/workspace.toml`](./mise/workspace.toml), which is symlinked to
-`~/.config/mise/conf.d/workspace.toml`. mise loads `conf.d/*.toml` into the **global**
-config, so the tools are active in every directory, not just this repo, and
-your personal `~/.config/mise/config.toml` stays untouched. `mise bootstrap`
-installs them from the merged config.
+The CLI tools (herdr, hunk, ghui, omp, pi, stylua, node) are declared in the
+`[tools]` section of [`mise.toml`](./mise.toml). `mise bootstrap` installs them
+into the **global** config, so they're active in every directory, not just this
+repo. A few tools (neovim, gh, claude-code, fzf, lazygit) are scoped to macOS
+only — on Arch/omarchy the system already provides them, so mise stays out of
+the way.
 
 Only config is tracked. Runtime files (logs, sockets, `state.json`, caches,
 `session.json`) stay out.
+
+### Overlaying onto omarchy
+
+On Linux this machine runs [omarchy](https://omarchy.org), which ships its own
+base configs. Where a config directory is shared with omarchy, the `[dotfiles]`
+entries **overlay** our files rather than replacing the whole directory, leaving
+omarchy's siblings untouched:
+
+- **nvim** — a top-level `*.lua` glob links `init.lua` (skipping the
+  nvim-managed `lazy-lock.json` / `lazyvim.json` lockfiles), and `symlink-each`
+  links our files under `lua/config/` and `lua/plugins/`. omarchy keeps
+  `options.lua`, themes, transparency, remote-clipboard, etc.
+- **omp / pi `extensions/`** — `symlink-each` overlays our tracked extensions
+  file-by-file, leaving tool-installed ones (e.g. `omarchy-system-theme.ts`) in
+  place.
+- **ghostty** — not a `[dotfiles]` entry (those can't be OS-scoped). On Linux
+  omarchy's managed config is left alone; on macOS the post-tools hook copies
+  ours in.
 
 **omp** is the default agent setup. Only non-secret config is tracked:
 `config.yml`, the `extensions` directory, and the local `pi-claude-bridge`
@@ -57,17 +74,24 @@ adding a matching `[dotfiles]` entry in [`mise.toml`](./mise.toml).
 
 ## Install
 
-From a fresh clone, run the install script. It installs mise if missing,
-trusts the repo, and runs `mise bootstrap`. Re-running is safe:
+From a fresh clone, run the install script. It installs mise if missing, trusts
+the repo, and runs `mise bootstrap`. Re-running is safe — mise converges each
+step and skips work already done:
 
 ```sh
 ./install.sh
 ```
 
-The bootstrap process...
+`mise bootstrap` then:
 
-1. applies `[dotfiles]`, including the `conf.d/workspace.toml` global-tools link,
-2. installs those tools (herdr, neovim, hunk, ghui, omp, pi) into the global config,
-3. runs the post-tools hook to install the Ghostty cask, link local Herdr plugins, and install local omp plugins.
+1. installs the `[tools]` into the global config,
+2. applies `[dotfiles]` — overlaying our configs onto any omarchy base (see
+   [Overlaying onto omarchy](#overlaying-onto-omarchy)) rather than clobbering it,
+3. runs the post-tools hook: installs fish, links the local Herdr plugin,
+   installs the local omp plugin, and (macOS only) copies the Ghostty config.
 
-For dotfiles which are being symlinked, the install script will back up any existing files. Otherwise running the installer would be destructive.
+The script runs with `--force-dotfiles` so managed symlinks can replace the
+pre-existing stock nvim files. The overlay entries (`symlink-each` / globs) only
+touch the files we track, so omarchy's own configs in those directories are left
+in place. If you'd rather preview first, run `mise bootstrap status` (no
+changes) or `mise bootstrap --dry-run`.
