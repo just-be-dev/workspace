@@ -48,8 +48,28 @@ lazygit = { version = "0.63.0", os = ["macos"] }
 
 [bootstrap.hooks.post-tools]
 run = '''
+# herdr dev-layout plugin. `herdr plugin link` registers the plugin over the
+# running herdr server's socket, so on a fresh bootstrap (no server yet) it fails
+# with a bare "Os NotFound". If a server is already up (you're in a herdr
+# session) link against it; otherwise start a transient headless server just long
+# enough to register — the registration persists on disk afterward. Linking is a
+# convenience, so it must never fail the bootstrap.
 if command -v herdr >/dev/null 2>&1; then
-  herdr plugin link "${MISE_PROJECT_ROOT:-$PWD}/herdr/plugins/dev-layout" >/dev/null
+  herdr_plugin="${MISE_PROJECT_ROOT:-$PWD}/herdr/plugins/dev-layout"
+  herdr_started=0
+  if ! herdr status 2>/dev/null | grep -q 'status: running'; then
+    herdr server >/dev/null 2>&1 &
+    for _ in $(seq 1 25); do
+      if herdr status 2>/dev/null | grep -q 'status: running'; then break; fi
+      sleep 0.2
+    done
+    herdr_started=1
+  fi
+  herdr plugin link "$herdr_plugin" >/dev/null 2>&1 ||
+    echo "warn: 'herdr plugin link $herdr_plugin' failed; run it yourself once herdr is running" >&2
+  if [ "$herdr_started" = 1 ]; then
+    herdr server stop >/dev/null 2>&1 || true
+  fi
 fi
 
 if command -v npm >/dev/null 2>&1; then
