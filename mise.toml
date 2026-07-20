@@ -36,6 +36,15 @@ lazygit = { version = "0.63.0", os = ["macos"] }
 [bootstrap.user]
 login_shell = "/bin/fish"
 
+# Interactive rc files get "activate" (full env); login profiles get "shims" so
+# non-interactive sessions still resolve tools without the activate hook.
+[bootstrap.mise_shell_activate]
+fish = "activate"
+bashrc = "activate"
+bash_profile = "shims"
+zshrc = "activate"
+zprofile = "shims"
+
 [bootstrap.hooks.post-tools]
 run = '''
 # herdr dev-layout plugin. `herdr plugin link` needs a running herdr server, so
