@@ -16,6 +16,7 @@ hunk = "latest"                                  # aqua:modem-dev/hunk — revie
 "github:can1357/oh-my-pi" = "latest"             # omp — Oh My Pi agent CLI (config tracked under omp/)
 "npm:@earendil-works/pi-coding-agent" = "latest" # pi — secondary agent harness (config tracked under pi/)
 stylua = "latest"                                # Lua formatter for nvim config
+atuin = "latest"                                  # shell history sync/search
 
 # macOS-only: omarchy already provides these on Linux, so scoping avoids shadowing.
 neovim = { version = "latest", os = ["macos"] }
@@ -31,6 +32,9 @@ lazygit = { version = "0.63.0", os = ["macos"] }
 "pacman:omarchy-fish" = "latest"
 # Cask (no `ghostty` formula — don't add one); macOS-only, auto-skipped on Linux.
 "brew-cask:ghostty" = "latest"
+
+[bootstrap.user]
+login_shell = "/bin/fish"
 
 [bootstrap.hooks.post-tools]
 run = '''
@@ -92,6 +96,9 @@ fi
 "~/.config/nvim/lua/plugins" = { source = "nvim/lua/plugins", mode = "symlink-each" }
 # ghostty NOT linked: [dotfiles] can't be OS-scoped and Linux keeps omarchy's
 # config. Copied on macOS via the post-tools hook above.
+# fish conf.d: symlink-each overlays our snippets onto omarchy-fish's managed
+# conf.d without clobbering the files it drops there.
+"~/.config/fish/conf.d" = { source = "fish/conf.d", mode = "symlink-each" }
 "~/.config/ghui/config.json" = "ghui/config.json"
 "~/.config/hunk/config.toml" = "hunk/config.toml"
 # omp: non-secret config only (creds/state stay in ~/.omp/agent/). extensions
@@ -102,8 +109,7 @@ fi
 # extensions uses symlink-each to overlay (leaves e.g. omarchy-system-theme.ts).
 "~/.pi/agent/settings.json" = "pi/agent/settings.json"
 "~/.pi/agent/extensions" = { source = "pi/agent/extensions", mode = "symlink-each" }
-# Skills: link each individually — these dirs also hold skill-manager installs.
-"~/.agents/skills/effect-setup" = "skills/effect-setup"
-"~/.agents/skills/mise-setup" = "skills/mise-setup"
-"~/.claude/skills/effect-setup" = "skills/effect-setup"
-"~/.claude/skills/mise-setup" = "skills/mise-setup"
+# Skills: symlink-each links each of our skills into these dirs without
+# clobbering skill-manager installs (e.g. omarchy) that also live here.
+"~/.agents/skills" = { source = "skills", mode = "symlink-each" }
+"~/.claude/skills" = { source = "skills", mode = "symlink-each" }
