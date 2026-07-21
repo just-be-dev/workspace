@@ -1,0 +1,15 @@
+[tools]
+herdr = "latest"                                 # github:ogulcancelik/herdr — terminal agent multiplexer
+hunk = "latest"                                  # aqua:modem-dev/hunk — review-first diff viewer
+"npm:@kitlangton/ghui" = "latest"                # GitHub PR TUI ("open in editor" -> nvim)
+"github:can1357/oh-my-pi" = "latest"             # omp — Oh My Pi agent CLI (config tracked under omp/)
+"npm:@earendil-works/pi-coding-agent" = "latest" # pi — secondary agent harness (config tracked under pi/)
+stylua = "latest"                                # Lua formatter for nvim config
+atuin = "latest"                                  # shell history sync/search
+
+# macOS-only: omarchy already provides these on Linux, so scoping avoids shadowing.
+neovim = { version = "latest", os = ["macos"] }
+gh = { version = "latest", os = ["macos"] }
+"npm:@anthropic-ai/claude-code" = { version = "latest", os = ["macos"] }
+fzf = { version = "0.74.0", os = ["macos"] }
+lazygit = { version = "0.63.0", os = ["macos"] }

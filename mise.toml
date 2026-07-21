@@ -1,5 +1,5 @@
 # workspace — single entry point. From a clone:
-#     mise trust -q && mise bootstrap --yes --force-dotfiles
+#     ./install.sh
 # min_version pins a known-good mise; bump after `mise self-update`.
 min_version = "2026.6.14"
 
@@ -9,22 +9,6 @@ pin = true
 dotfiles.default_mode = "symlink"
 minimum_release_age_excludes = ["github:can1357/oh-my-pi"]
 
-[tools]
-herdr = "latest"                                 # github:ogulcancelik/herdr — terminal agent multiplexer
-hunk = "latest"                                  # aqua:modem-dev/hunk — review-first diff viewer
-"npm:@kitlangton/ghui" = "latest"                # GitHub PR TUI ("open in editor" -> nvim)
-"github:can1357/oh-my-pi" = "latest"             # omp — Oh My Pi agent CLI (config tracked under omp/)
-"npm:@earendil-works/pi-coding-agent" = "latest" # pi — secondary agent harness (config tracked under pi/)
-stylua = "latest"                                # Lua formatter for nvim config
-atuin = "latest"                                  # shell history sync/search
-
-# macOS-only: omarchy already provides these on Linux, so scoping avoids shadowing.
-neovim = { version = "latest", os = ["macos"] }
-gh = { version = "latest", os = ["macos"] }
-"npm:@anthropic-ai/claude-code" = { version = "latest", os = ["macos"] }
-fzf = { version = "0.74.0", os = ["macos"] }
-lazygit = { version = "0.63.0", os = ["macos"] }
-
 [bootstrap.packages]
 # Bare package names (no repo/ prefix): mise checks installs with `pacman -Q`,
 # which rejects repo-qualified names and would report them missing forever.
@@ -32,9 +16,6 @@ lazygit = { version = "0.63.0", os = ["macos"] }
 "pacman:omarchy-fish" = "latest"
 # Cask (no `ghostty` formula — don't add one); macOS-only, auto-skipped on Linux.
 "brew-cask:ghostty" = "latest"
-
-[bootstrap.user]
-login_shell = "/bin/fish"
 
 # Interactive rc files get "activate" (full env); login profiles get "shims" so
 # non-interactive sessions still resolve tools without the activate hook.
@@ -96,6 +77,9 @@ fi
 # Config symlinks. Sources are relative to this file; --force-dotfiles replaces
 # existing real files.
 [dotfiles]
+# Global mise tools. `mise bootstrap` applies dotfiles before the tools step, so
+# this symlink is in place before `mise install` runs and before post-tools hooks.
+"~/.config/mise/conf.d/workspace.toml" = "mise/workspace.toml"
 "~/.config/herdr/config.toml" = "herdr/config.toml"
 # nvim overlays onto omarchy's base: *.lua links init.lua but skips the
 # nvim-managed *.json lockfiles; symlink-each owns our lua/config + lua/plugins

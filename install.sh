@@ -42,6 +42,11 @@ if [ "${WORKSPACE_ASSUME_YES:-}" != "1" ]; then
 	esac
 fi
 
+# `mise bootstrap` loads config files when the process starts. Link the global
+# workspace tools config first; the full bootstrap then starts fresh, sees those
+# tools, runs `mise install`, and only then runs post-tools hooks.
+mise bootstrap dotfiles apply --yes --force '~/.config/mise/conf.d/workspace.toml'
+
 # --force-dotfiles lets our symlinks replace the stock nvim files. --quiet drops
 # mise's echo of each hook script. System packages may prompt for sudo.
 exec mise bootstrap --yes --quiet --force-dotfiles "$@"
