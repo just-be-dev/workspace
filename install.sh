@@ -43,10 +43,11 @@ if [ "${WORKSPACE_ASSUME_YES:-}" != "1" ]; then
 fi
 
 # `mise bootstrap` loads config files when the process starts. Link the global
-# workspace tools config first; the full bootstrap then starts fresh, sees those
-# tools, runs `mise install`, and only then runs post-tools hooks.
-mise bootstrap dotfiles apply --yes --force '~/.config/mise/conf.d/workspace.toml'
+# workspace tools config first using plain dotfile apply, not force; conflicts
+# should stay visible instead of being clobbered by the installer.
+mise bootstrap dotfiles apply --yes '~/.config/mise/conf.d/workspace.toml'
 
-# --force-dotfiles lets our symlinks replace the stock nvim files. --quiet drops
-# mise's echo of each hook script. System packages may prompt for sudo.
-exec mise bootstrap --yes --quiet --force-dotfiles "$@"
+# Run the normal convergent bootstrap. Do not force dotfiles here: reruns should
+# behave like `mise bootstrap`, leaving conflicts for the user to resolve
+# explicitly instead of overwriting existing files or following legacy symlinks.
+exec mise bootstrap --yes --quiet "$@"

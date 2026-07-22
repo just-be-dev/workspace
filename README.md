@@ -86,20 +86,20 @@ work already done:
 ```
 
 Once you confirm, the install script first links
-`~/.config/mise/conf.d/workspace.toml`, then starts a fresh `mise bootstrap` with
-`--force-dotfiles`. That fresh process sees the global tools config before its
-tools step, so the post-tools hook can rely on installed tools (notably `herdr`):
+`~/.config/mise/conf.d/workspace.toml` with a plain dotfile apply, then starts a
+fresh `mise bootstrap`. It intentionally does **not** pass `--force-dotfiles`:
+conflicting real files stay visible in the plan instead of being clobbered by
+the installer.
+
+The bootstrap then converges the normal mise parts:
 
 1. installs system packages,
-2. applies `[dotfiles]` — overlaying our configs onto any omarchy base (see
-   [Overlaying onto omarchy](#overlaying-onto-omarchy)) rather than clobbering it,
+2. applies `[dotfiles]` where targets are missing or already managed,
 3. confirms the global tools are installed and runs the post-tools hook:
-   installs fish, links the local Herdr plugin, installs the local omp plugin,
-   and (macOS only) copies the Ghostty config.
+   installs fish, installs Ghostty on macOS if missing, links the local Herdr
+   plugin, installs the local omp plugin, and copies the Ghostty config.
 
-`--force-dotfiles` lets managed symlinks replace the pre-existing stock nvim
-files; the overlay entries (`symlink-each` / globs) only touch the files we
-track, so omarchy's own configs in those directories are left in place. For
-unattended runs set `WORKSPACE_ASSUME_YES=1` to skip the prompt; to inspect
-without the script, `mise bootstrap status` and `mise bootstrap --dry-run` both
-change nothing.
+If a dotfile target is reported as `differs`, resolve it explicitly after
+reviewing the file. For unattended runs set `WORKSPACE_ASSUME_YES=1` to skip
+the prompt; to inspect without the script, `mise bootstrap status` and
+`mise bootstrap --dry-run` both change nothing.

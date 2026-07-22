@@ -14,8 +14,9 @@ minimum_release_age_excludes = ["github:can1357/oh-my-pi"]
 # which rejects repo-qualified names and would report them missing forever.
 "pacman:fish" = "latest"
 "pacman:omarchy-fish" = "latest"
-# Cask (no `ghostty` formula — don't add one); macOS-only, auto-skipped on Linux.
-"brew-cask:ghostty" = "latest"
+# Ghostty is installed in the post-tools hook below. Avoid mise's brew-cask
+# backend here: Ghostty's DMG includes /Applications symlink, which can make
+# mise recurse into Xcode.app's Ruby header self-link while copying/extracting.
 
 # Interactive rc files get "activate" (full env); login profiles get "shims" so
 # non-interactive sessions still resolve tools without the activate hook.
@@ -69,6 +70,9 @@ fi
 
 # Ghostty config, macOS only (Linux keeps omarchy's managed config).
 if [ "$(uname)" = "Darwin" ]; then
+  if [ ! -d /Applications/Ghostty.app ] && command -v brew >/dev/null 2>&1; then
+    brew install --cask ghostty
+  fi
   mkdir -p "$HOME/.config/ghostty"
   cp "${MISE_PROJECT_ROOT:-$PWD}/ghostty/config" "$HOME/.config/ghostty/config"
 fi
