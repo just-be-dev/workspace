@@ -1,10 +1,12 @@
 providers: 
-  webSearch: auto
+  {}
 symbolPreset: nerd
 theme: 
   dark: titanium
 setupVersion: 1
 modelRoles: 
-  default: openai-codex/gpt-5.5:high
+  default: anthropic/claude-opus-5:high
   designer: openai-codex/gpt-5.6-sol
 defaultThinkingLevel: auto
+dev: 
+  autoqaConsent: granted
