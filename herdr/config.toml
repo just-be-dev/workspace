@@ -100,6 +100,33 @@ pid=$(printf '%s' "$out" | jq -r '.result.pane.pane_id')
 [ -n "$pid" ] && "$B" pane run "$pid" hunk diff .
 '''
 
+# prefix+shift+h / s / c / d: review agent-authored changes with hunk from Herdr.
+# The plugin's default staged binding is prefix+shift+a; this config keeps that
+# for the dev layout and uses prefix+shift+d for staged diffs.
+[[keys.command]]
+key = "prefix+shift+h"
+type = "plugin_action"
+description = "hunk: review changes"
+command = "jhochenbaum.hunkdiff.review"
+
+[[keys.command]]
+key = "prefix+shift+s"
+type = "plugin_action"
+description = "hunk: send review to agent"
+command = "jhochenbaum.hunkdiff.send-review"
+
+[[keys.command]]
+key = "prefix+shift+c"
+type = "plugin_action"
+description = "hunk: review the last commit"
+command = "jhochenbaum.hunkdiff.review:commit"
+
+[[keys.command]]
+key = "prefix+shift+d"
+type = "plugin_action"
+description = "hunk: review staged changes"
+command = "jhochenbaum.hunkdiff.review:staged"
+
 # prefix+shift+m: start/resume Herdr Mirror for configured remotes.
 [[keys.command]]
 key = "prefix+shift+m"

@@ -1,0 +1,24 @@
+# herdr-hunk-diff configuration (managed by workspace)
+# Plugin: https://github.com/jhochenbaum/herdr-hunk-diff
+
+[review]
+auto_open = false          # keep reviews explicit; use prefix+shift+h to open
+on_states = ["idle"]       # used if auto_open is enabled later
+reuse_pane = true
+default_target = "auto"    # branch diff when ahead of base, otherwise working tree
+watch = false
+placement = "split"
+exclude_untracked = false
+
+[roundtrip]
+clear_after_send = true
+prompt_template = """Human-authored inline review comments on your changes in {worktree}:
+
+{comments}
+
+Address each comment and verify the resulting changes. If a comment is unclear or requires a decision, ask a focused clarification question and continue with any unaffected comments. Then summarize what you changed and explain anything you did not implement."""
+
+[hunk]
+bin = "auto"               # use the hunk executable bundled with the plugin
+experimental = false
+extra_args = []

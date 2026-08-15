@@ -14,6 +14,7 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `mise/workspace.toml` | Global mise tool config | `[dotfiles]` | `~/.config/mise/conf.d/workspace.toml` |
 | `herdr/config.toml` | [herdr](https://herdr.dev) | `mise/workspace.toml` -> `herdr` | `~/.config/herdr/config.toml` |
 | `herdr/plugins/dev-layout/` | Herdr plugin: four-pane dev layout | post-tools hook -> `herdr plugin link` | — |
+| `herdr/plugin-config/jhochenbaum.hunkdiff/config.toml` | Herdr plugin config: hunk review round-trip | `mise.toml` -> `jhochenbaum/herdr-hunk-diff` | `~/.config/herdr/plugins/config/jhochenbaum.hunkdiff/config.toml` |
 | `herdr-mirror/hosts.toml` | [herdr-mirror](https://github.com/nikok6/herdr-mirror) remote host config | `[dotfiles]` | `~/.config/herdr-mirror/hosts.toml` |
 | `nvim/`             | [LazyVim](https://lazyvim.org) | `mise/workspace.toml` -> `neovim` (macOS; omarchy on Linux) | `~/.config/nvim` (overlay) |
 | `ghostty/config`    | [Ghostty](https://ghostty.org) | post-tools hook (`brew --cask`) | `~/.config/ghostty/config` (macOS only) |
@@ -97,8 +98,8 @@ The bootstrap then converges the normal mise parts:
 1. installs system packages,
 2. applies `[dotfiles]` where targets are missing or already managed,
 3. confirms the global tools are installed and runs the post-tools hook:
-   installs fish, installs Ghostty on macOS if missing, links the local Herdr
-   plugin, installs the local omp plugin, and copies the Ghostty config.
+   installs fish, installs Ghostty on macOS if missing, installs/links Herdr
+   plugins, installs the local omp plugin, and copies the Ghostty config.
 
 If a dotfile target is reported as `differs`, resolve it explicitly after
 reviewing the file. For unattended runs set `WORKSPACE_ASSUME_YES=1` to skip
