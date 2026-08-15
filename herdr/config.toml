@@ -100,6 +100,78 @@ pid=$(printf '%s' "$out" | jq -r '.result.pane.pane_id')
 [ -n "$pid" ] && "$B" pane run "$pid" hunk diff .
 '''
 
+# prefix+shift+m: start/resume Herdr Mirror for configured remotes.
+[[keys.command]]
+key = "prefix+shift+m"
+type = "plugin_action"
+description = "start Herdr Mirror"
+command = "mirror.start"
+
+# prefix+m: start Herdr Mirror, then focus the retro mirror workspace.
+[[keys.command]]
+key = "prefix+m"
+type = "shell"
+description = "open retro mirror workspace"
+command = '''
+B="${HERDR_BIN_PATH:-herdr}"
+"$HOME/.local/bin/herdr-mirror" start >/dev/null 2>&1 || "$B" plugin action invoke mirror.start >/dev/null 2>&1 || exit 1
+for _ in $(seq 1 10); do
+  wid=$("$B" workspace list | jq -r 'first(.result.workspaces[] | select(.label | startswith("retro:")) | .workspace_id) // empty')
+  [ -n "$wid" ] && exec "$B" workspace focus "$wid" >/dev/null
+  sleep 0.5
+done
+'''
+
+# prefix+alt+r: same as prefix+m, if the terminal sends Option keys.
+[[keys.command]]
+key = "prefix+alt+r"
+type = "shell"
+description = "open retro mirror workspace"
+command = '''
+B="${HERDR_BIN_PATH:-herdr}"
+"$HOME/.local/bin/herdr-mirror" start >/dev/null 2>&1 || "$B" plugin action invoke mirror.start >/dev/null 2>&1 || exit 1
+for _ in $(seq 1 10); do
+  wid=$("$B" workspace list | jq -r 'first(.result.workspaces[] | select(.label | startswith("retro:")) | .workspace_id) // empty')
+  [ -n "$wid" ] && exec "$B" workspace focus "$wid" >/dev/null
+  sleep 0.5
+done
+'''
+
+# prefix+shift+b: restore mirror workspaces closed locally.
+[[keys.command]]
+key = "prefix+shift+b"
+type = "plugin_action"
+description = "restore Herdr Mirror workspaces"
+command = "mirror.restore"
+
+# prefix+alt+n: create a workspace on the mirrored/default remote host.
+[[keys.command]]
+key = "prefix+alt+n"
+type = "plugin_action"
+description = "create remote mirror workspace"
+command = "mirror.remote-new-workspace"
+
+# prefix+alt+c: create a tab on the mirrored remote host, or locally outside mirrors.
+[[keys.command]]
+key = "prefix+alt+c"
+type = "plugin_action"
+description = "create remote mirror tab"
+command = "mirror.remote-new-tab"
+
+# prefix+alt+v: split right on the mirrored remote host, or locally outside mirrors.
+[[keys.command]]
+key = "prefix+alt+v"
+type = "plugin_action"
+description = "split remote mirror right"
+command = "mirror.remote-split-right"
+
+# prefix+alt+minus: split down on the mirrored remote host, or locally outside mirrors.
+[[keys.command]]
+key = "prefix+alt+minus"
+type = "plugin_action"
+description = "split remote mirror down"
+command = "mirror.remote-split-down"
+
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.
 # [keys.indexed]
@@ -187,3 +259,7 @@ delivery = "herdr"
 # By default, droid is muted.
 # [ui.sound.agents]
 # droid = "off"
+
+[experimental]
+# Allow attaching to a remote Herdr from inside this local Herdr pane.
+allow_nested = true

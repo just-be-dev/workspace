@@ -1,0 +1,8 @@
+# Herdr Mirror hosts. Canonical target: ~/.config/herdr-mirror/hosts.toml
+# Mirrored workspaces appear locally as "retro: <remote workspace>".
+default_host = "retro"
+close_remote_on_local_close = false
+always_control = true
+
+[hosts.retro]
+target = "retro"

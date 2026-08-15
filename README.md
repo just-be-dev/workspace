@@ -14,6 +14,7 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `mise/workspace.toml` | Global mise tool config | `[dotfiles]` | `~/.config/mise/conf.d/workspace.toml` |
 | `herdr/config.toml` | [herdr](https://herdr.dev) | `mise/workspace.toml` -> `herdr` | `~/.config/herdr/config.toml` |
 | `herdr/plugins/dev-layout/` | Herdr plugin: four-pane dev layout | post-tools hook -> `herdr plugin link` | — |
+| `herdr-mirror/hosts.toml` | [herdr-mirror](https://github.com/nikok6/herdr-mirror) remote host config | `[dotfiles]` | `~/.config/herdr-mirror/hosts.toml` |
 | `nvim/`             | [LazyVim](https://lazyvim.org) | `mise/workspace.toml` -> `neovim` (macOS; omarchy on Linux) | `~/.config/nvim` (overlay) |
 | `ghostty/config`    | [Ghostty](https://ghostty.org) | post-tools hook (`brew --cask`) | `~/.config/ghostty/config` (macOS only) |
 | `ghui/config.json`  | [ghui](https://github.com/kitlangton/ghui) | `mise/workspace.toml` -> `npm:@kitlangton/ghui` | `~/.config/ghui/config.json` |

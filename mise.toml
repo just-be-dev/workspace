@@ -29,11 +29,11 @@ zprofile = "shims"
 
 [bootstrap.hooks.post-tools]
 run = '''
-# herdr dev-layout plugin. `herdr plugin link` needs a running herdr server, so
-# if none is up start a transient headless one to register (persists on disk),
+# Herdr plugins. `herdr plugin install/link` needs a running Herdr server, so if
+# none is up start a transient headless one to register them (persists on disk),
 # then stop it. Must never fail the bootstrap.
 if command -v herdr >/dev/null 2>&1; then
-  herdr_plugin="${MISE_PROJECT_ROOT:-$PWD}/herdr/plugins/dev-layout"
+  herdr_plugins_dir="${MISE_PROJECT_ROOT:-$PWD}/herdr/plugins"
   herdr_started=0
   if ! herdr status 2>/dev/null | grep -q 'status: running'; then
     herdr server >/dev/null 2>&1 &
@@ -43,8 +43,15 @@ if command -v herdr >/dev/null 2>&1; then
     done
     herdr_started=1
   fi
-  herdr plugin link "$herdr_plugin" >/dev/null 2>&1 ||
-    echo "warn: 'herdr plugin link $herdr_plugin' failed; run it yourself once herdr is running" >&2
+  herdr plugin install nikok6/herdr-mirror --yes >/dev/null 2>&1 ||
+    echo "warn: 'herdr plugin install nikok6/herdr-mirror --yes' failed; run it yourself once herdr is running" >&2
+
+  for herdr_plugin in "$herdr_plugins_dir"/*; do
+    [ -d "$herdr_plugin" ] || continue
+    [ -f "$herdr_plugin/herdr-plugin.toml" ] || continue
+    herdr plugin link "$herdr_plugin" >/dev/null 2>&1 ||
+      echo "warn: 'herdr plugin link $herdr_plugin' failed; run it yourself once herdr is running" >&2
+  done
   if [ "$herdr_started" = 1 ]; then
     herdr server stop >/dev/null 2>&1 || true
   fi
@@ -85,6 +92,7 @@ fi
 # this symlink is in place before `mise install` runs and before post-tools hooks.
 "~/.config/mise/conf.d/workspace.toml" = "mise/workspace.toml"
 "~/.config/herdr/config.toml" = "herdr/config.toml"
+"~/.config/herdr-mirror/hosts.toml" = "herdr-mirror/hosts.toml"
 # nvim overlays onto omarchy's base: *.lua links init.lua but skips the
 # nvim-managed *.json lockfiles; symlink-each owns our lua/config + lua/plugins
 # files, leaving omarchy's (options.lua, themes) in place.
