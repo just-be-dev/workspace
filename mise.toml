@@ -118,7 +118,10 @@ fi
 # extensions uses symlink-each to overlay (leaves e.g. omarchy-system-theme.ts).
 "~/.pi/agent/settings.json" = "pi/agent/settings.json"
 "~/.pi/agent/extensions" = { source = "pi/agent/extensions", mode = "symlink-each" }
-# Skills: symlink-each links each of our skills into these dirs without
-# clobbering skill-manager installs (e.g. omarchy) that also live here.
-"~/.agents/skills" = { source = "skills", mode = "symlink-each" }
-"~/.claude/skills" = { source = "skills", mode = "symlink-each" }
+# Skills are directory-shaped packages. Link each skill directory explicitly:
+# recursive symlink-each can follow an existing skill-directory symlink and create
+# self-referential SKILL.md links inside the source tree.
+"~/.agents/skills/effect-setup" = "skills/effect-setup"
+"~/.agents/skills/mise-setup" = "skills/mise-setup"
+"~/.claude/skills/effect-setup" = "skills/effect-setup"
+"~/.claude/skills/mise-setup" = "skills/mise-setup"

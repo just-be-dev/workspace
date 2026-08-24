@@ -73,7 +73,7 @@ directory. Secrets and runtime state — `auth.json`, `sessions/`, `npm/`,
 agents). That directory also holds skills installed by a skill manager, so each
 tracked skill under [`skills/`](./skills) is symlinked individually rather than
 linking the whole directory. Add a skill by dropping its folder in `skills/` and
-adding a matching `[dotfiles]` entry in [`mise.toml`](./mise.toml).
+adding matching `[dotfiles]` entries in [`mise.toml`](./mise.toml).
 
 ## Install
 
