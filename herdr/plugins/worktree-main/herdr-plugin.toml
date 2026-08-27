@@ -1,0 +1,14 @@
+id = "local.worktree-main"
+name = "Worktree from Main"
+version = "0.1.0"
+min_herdr_version = "0.8.2"
+description = "Create Git worktrees from the local main branch."
+platforms = ["macos", "linux"]
+
+[[panes]]
+id = "create"
+title = "Branch name"
+placement = "popup"
+width = 80
+height = 4
+command = ["bash", "create.sh"]

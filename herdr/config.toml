@@ -13,7 +13,7 @@ open_notification_target = "prefix+o"
 # workspace_picker = "prefix+w"
 # goto = "prefix+g"
 # new_workspace = "prefix+shift+n"
-# new_worktree = "prefix+shift+g"
+new_worktree = ""
 # open_worktree = ""    # optional, unset by default
 # remove_worktree = ""  # optional, unset by default; opens confirmation
 # rename_workspace = "prefix+shift+w"
@@ -63,6 +63,18 @@ edit_scrollback = ""
 # key = "prefix+alt+g"
 # type = "pane"
 # command = "lazygit"
+
+# Create worktrees from local main instead of the active checkout's HEAD.
+[[keys.command]]
+key = "prefix+shift+g"
+type = "shell"
+description = "create a worktree from main"
+command = '''
+B="${HERDR_BIN_PATH:-herdr}"
+"$B" plugin pane open \
+  --plugin local.worktree-main \
+  --entrypoint create
+'''
 
 # prefix+shift+a: open the standard four-pane dev layout in a new tab.
 [[keys.command]]
