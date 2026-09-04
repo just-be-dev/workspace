@@ -8,11 +8,11 @@ hunk = "latest"                                  # aqua:modem-dev/hunk — revie
 stylua = "latest"                                # Lua formatter for nvim config
 atuin = "latest"                                  # shell history sync/search
 pitchfork = "latest"                             # daemonize/supervise background processes
-node = "24.15.0"
+node = "26.8.1"
 
 # macOS-only: omarchy already provides these on Linux, so scoping avoids shadowing.
 neovim = { version = "latest", os = ["macos"] }
 gh = { version = "latest", os = ["macos"] }
 "aqua:anthropics/claude-code" = { version = "latest", os = ["macos"] }
-fzf = { version = "0.74.0", os = ["macos"] }
-lazygit = { version = "0.63.0", os = ["macos"] }
+fzf = { version = "0.74.3", os = ["macos"] }
+lazygit = { version = "0.64.1", os = ["macos"] }
