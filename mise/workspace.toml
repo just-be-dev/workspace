@@ -16,3 +16,4 @@ gh = { version = "latest", os = ["macos"] }
 "aqua:anthropics/claude-code" = { version = "latest", os = ["macos"] }
 fzf = { version = "0.74.3", os = ["macos"] }
 lazygit = { version = "0.64.1", os = ["macos"] }
+"npm:@openai/codex" = "0.154.0"

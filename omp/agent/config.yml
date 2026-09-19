@@ -1,10 +1,10 @@
-providers: 
+providers:
   {}
 symbolPreset: nerd
-theme: 
+theme:
   dark: titanium
 setupVersion: 2
-modelRoles: 
+modelRoles:
   default: openai-codex/gpt-5.6-sol:high
   designer: openai-codex/gpt-5.6-sol
 defaultThinkingLevel: auto
