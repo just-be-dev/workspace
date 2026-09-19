@@ -9,6 +9,7 @@ stylua = "latest"                                # Lua formatter for nvim config
 atuin = "latest"                                  # shell history sync/search
 pitchfork = "latest"                             # daemonize/supervise background processes
 node = "26.8.1"
+rust = "1.90.0"                                  # required to build herdr-projects (minimum 1.89)
 
 # macOS-only: omarchy already provides these on Linux, so scoping avoids shadowing.
 neovim = { version = "latest", os = ["macos"] }

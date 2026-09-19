@@ -15,6 +15,7 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `herdr/config.toml` | [herdr](https://herdr.dev) | `mise/workspace.toml` -> `herdr` | `~/.config/herdr/config.toml` |
 | `herdr/plugins/dev-layout/` | Herdr plugin: four-pane dev layout | post-tools hook -> `herdr plugin link` | — |
 | `herdr/plugin-config/jhochenbaum.hunkdiff/config.toml` | Herdr plugin config: hunk review round-trip | `mise.toml` -> `jhochenbaum/herdr-hunk-diff` | `~/.config/herdr/plugins/config/jhochenbaum.hunkdiff/config.toml` |
+| — | [herdr-projects](https://github.com/eliasstravik/herdr-projects) coordinator and worktree plugin | post-tools hook -> `herdr plugin install` | — |
 | `herdr-mirror/hosts.toml` | [herdr-mirror](https://github.com/nikok6/herdr-mirror) remote host config | `[dotfiles]` | `~/.config/herdr-mirror/hosts.toml` |
 | `nvim/`             | [LazyVim](https://lazyvim.org) | `mise/workspace.toml` -> `neovim` (macOS; omarchy on Linux) | `~/.config/nvim` (overlay) |
 | `ghostty/config`    | [Ghostty](https://ghostty.org) | post-tools hook (`brew --cask`) | `~/.config/ghostty/config` (macOS only) |
@@ -30,12 +31,13 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 
 ### Global tools
 
-The CLI tools (herdr, hunk, ghui, omp, pi, stylua, atuin) are declared in
-[`mise/workspace.toml`](./mise/workspace.toml). The main [`mise.toml`](./mise.toml)
-symlinks that file to `~/.config/mise/conf.d/workspace.toml`, making those tools
-global instead of repo-local. A few tools (neovim, gh, claude-code, fzf,
-lazygit) are scoped to macOS only — on Arch/omarchy the system already provides
-them, so mise stays out of the way.
+The CLI tools (herdr, hunk, ghui, omp, pi, stylua, atuin, and Rust) are declared
+in [`mise/workspace.toml`](./mise/workspace.toml). The main
+[`mise.toml`](./mise.toml) symlinks that file to
+`~/.config/mise/conf.d/workspace.toml`, making those tools global instead of
+repo-local. A few tools (neovim, gh, claude-code, fzf, lazygit) are scoped to
+macOS only — on Arch/omarchy the system already provides them, so mise stays out
+of the way.
 
 Only config is tracked. Runtime files (logs, sockets, `state.json`, caches,
 `session.json`) stay out.
