@@ -87,7 +87,11 @@ if [ "$(uname)" = "Darwin" ]; then
     brew install --cask ghostty
   fi
   mkdir -p "$HOME/.config/ghostty"
-  cp "${MISE_PROJECT_ROOT:-$PWD}/ghostty/config" "$HOME/.config/ghostty/config"
+  ghostty_source="${MISE_PROJECT_ROOT:-$PWD}/ghostty/config"
+  ghostty_target="$HOME/.config/ghostty/config"
+  if ! cmp -s "$ghostty_source" "$ghostty_target"; then
+    cp "$ghostty_source" "$ghostty_target"
+  fi
 fi
 '''
 

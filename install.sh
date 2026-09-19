@@ -47,6 +47,23 @@ fi
 # should stay visible instead of being clobbered by the installer.
 mise bootstrap dotfiles apply --yes '~/.config/mise/conf.d/workspace.toml'
 
+# Skill installers may have copied these managed directories before the workspace
+# was bootstrapped. Adopt only byte-identical copies; leave divergent directories
+# untouched so the normal non-force bootstrap reports the conflict.
+adopt_matching_dotfile() {
+	local source=$1
+	local target=$2
+
+	if [ -e "$target" ] && [ ! -L "$target" ] && diff -qr "$source" "$target" >/dev/null 2>&1; then
+		mise bootstrap dotfiles apply --yes --force "$target"
+	fi
+}
+
+adopt_matching_dotfile "$REPO_DIR/skills/effect-setup" "$HOME/.agents/skills/effect-setup"
+adopt_matching_dotfile "$REPO_DIR/skills/mise-setup" "$HOME/.agents/skills/mise-setup"
+adopt_matching_dotfile "$REPO_DIR/skills/effect-setup" "$HOME/.claude/skills/effect-setup"
+adopt_matching_dotfile "$REPO_DIR/skills/mise-setup" "$HOME/.claude/skills/mise-setup"
+
 # Run the normal convergent bootstrap. Do not force dotfiles here: reruns should
 # behave like `mise bootstrap`, leaving conflicts for the user to resolve
 # explicitly instead of overwriting existing files or following legacy symlinks.
