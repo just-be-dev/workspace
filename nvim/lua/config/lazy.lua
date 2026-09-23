@@ -18,6 +18,10 @@ require("lazy").setup({
   spec = {
     -- add LazyVim and import its plugins
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+    -- extras must sit between `lazyvim.plugins` and your own `plugins`.
+    -- Declared here rather than in lazyvim.json, which is untracked local
+    -- state in ~/.config/nvim while this file is symlinked from the repo.
+    { import = "lazyvim.plugins.extras.lang.python" },
     -- import/override with your plugins
     { import = "plugins" },
   },
