@@ -86,12 +86,12 @@ async function main(): Promise<void> {
   const bottomLeft = await split(topLeft, "down", { ratio: "0.8", focus: true });
   const bottomRight = await split(topRight, "down");
 
-  await runHerdr(["pane", "rename", topLeft, "omp"]);
+  await runHerdr(["pane", "rename", topLeft, "pi"]);
   await runHerdr(["pane", "rename", topRight, "but tui"]);
   await runHerdr(["pane", "rename", bottomRight, "ghui"]);
   await runHerdr(["pane", "rename", bottomLeft, "terminal"]);
 
-  await runHerdr(["pane", "run", topLeft, "omp"]);
+  await runHerdr(["pane", "run", topLeft, "pi"]);
   await runHerdr(["pane", "run", topRight, "but tui"]);
   await runHerdr(["pane", "run", bottomRight, "ghui"]);
 }

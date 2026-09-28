@@ -16,7 +16,7 @@ abbr -a gpu --function _abbr_gpu
 
 # invoke nvim
 abbr -a n nvim
-abbr -a ai omp
+abbr -a ai pi
 
 # Git remove merged branches
 abbr -a grmb git rm-merged

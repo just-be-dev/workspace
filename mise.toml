@@ -7,7 +7,6 @@ min_version = "2026.6.14"
 experimental = true # required for `mise bootstrap` + [dotfiles]
 pin = true
 dotfiles.default_mode = "symlink"
-minimum_release_age_excludes = ["github:can1357/oh-my-pi"]
 
 [bootstrap.packages]
 # Bare package names (no repo/ prefix): mise checks installs with `pacman -Q`,
@@ -63,12 +62,6 @@ if command -v herdr >/dev/null 2>&1; then
   fi
 fi
 
-if command -v npm >/dev/null 2>&1; then
-  omp_plugins_dir="$HOME/.omp/plugins"
-  mkdir -p "$omp_plugins_dir"
-  npm --prefix "$omp_plugins_dir" install "${MISE_PROJECT_ROOT:-$PWD}/omp/plugins/pi-claude-bridge-0.6.2-omp.1.tgz" --save --ignore-scripts --no-audit --no-fund >/dev/null
-fi
-
 # fish shell (no mise backend). omarchy-fish on Arch layers omarchy's fish config;
 # Homebrew elsewhere.
 if command -v pacman >/dev/null 2>&1; then
@@ -117,10 +110,6 @@ fi
 "~/.config/fish/conf.d" = { source = "fish/conf.d", mode = "symlink-each" }
 "~/.config/ghui/config.json" = "ghui/config.json"
 "~/.config/hunk/config.toml" = "hunk/config.toml"
-# omp: non-secret config only (creds/state stay in ~/.omp/agent/). extensions
-# uses symlink-each to overlay without clobbering tool-dropped files.
-"~/.omp/agent/config.yml" = "omp/agent/config.yml"
-"~/.omp/agent/extensions" = { source = "omp/agent/extensions", mode = "symlink-each" }
 # pi: non-secret config only (auth.json, sessions/, etc. stay untracked).
 # extensions uses symlink-each to overlay (leaves e.g. omarchy-system-theme.ts).
 "~/.pi/agent/settings.json" = "pi/agent/settings.json"
