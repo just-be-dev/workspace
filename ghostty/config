@@ -4,4 +4,4 @@
 # By default Ghostty sends `[27;2;13~` for Shift+Enter, which these apps do
 # not treat as a newline. Sending `\n` makes pi receive it as ctrl+j, which
 # pi already maps to `tui.input.newLine`.
-keybind = shift+enter=text:"\n"
+keybind = shift+enter=text:\n
