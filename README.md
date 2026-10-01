@@ -21,7 +21,8 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `ghostty/config`    | [Ghostty](https://ghostty.org) | post-tools hook (`brew --cask`) | `~/.config/ghostty/config` (macOS only) |
 | `ghui/config.json`  | [ghui](https://github.com/kitlangton/ghui) | `mise/workspace.toml` -> `npm:@kitlangton/ghui` | `~/.config/ghui/config.json` |
 | `hunk/config.toml`  | [hunk](https://github.com/modem-dev/hunk) | `mise/workspace.toml` -> `hunk` | `~/.config/hunk/config.toml` |
-| `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi-coding-agent) | `mise/workspace.toml` -> `npm:@earendil-works/pi-coding-agent` | `~/.pi/agent/settings.json` |
+| `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi) | `mise/workspace.toml` -> `github:earendil-works/pi` | `~/.pi/agent/settings.json` |
+| `pi/agent/mcp.json`      | pi built-in MCP servers | (config only) | `~/.pi/agent/mcp.json` |
 | `pi/agent/extensions/`   | pi extensions | (config only) | `~/.pi/agent/extensions` (overlay) |
 | `skills/effect-setup/`   | [agent skill](https://github.com/anthropics/skills) | (config only) | `~/.agents/skills/effect-setup` |
 | `skills/mise-setup/`     | agent skill | (config only) | `~/.agents/skills/mise-setup` |
@@ -57,9 +58,9 @@ omarchy's siblings untouched:
   omarchy's managed config is left alone; on macOS the post-tools hook copies
   ours in.
 
-**pi** is the agent harness. Its tracked config is `settings.json` (preferences + package list) and the `extensions/`
-directory. Secrets and runtime state — `auth.json`, `sessions/`, `npm/`,
-`trust.json` — stay in `~/.pi/agent/` and are never tracked.
+**pi** is the agent harness. Its tracked config is `settings.json` (preferences + package list), `mcp.json`
+(built-in MCP servers), and the `extensions/` directory. Secrets and runtime
+state — `auth.json`, `mcp-auth.json`, `sessions/`, `npm/`, `trust.json` — stay in `~/.pi/agent/` and are never tracked.
 
 **Skills** live in the shared `~/.agents/skills/` directory (read by pi and other
 agents). That directory also holds skills installed by a skill manager, so each

@@ -113,6 +113,8 @@ fi
 # pi: non-secret config only (auth.json, sessions/, etc. stay untracked).
 # extensions uses symlink-each to overlay (leaves e.g. omarchy-system-theme.ts).
 "~/.pi/agent/settings.json" = "pi/agent/settings.json"
+# Built-in MCP server config (OAuth tokens live in untracked mcp-auth.json).
+"~/.pi/agent/mcp.json" = "pi/agent/mcp.json"
 "~/.pi/agent/extensions" = { source = "pi/agent/extensions", mode = "symlink-each" }
 # Skills are directory-shaped packages. Link each skill directory explicitly:
 # recursive symlink-each can follow an existing skill-directory symlink and create
