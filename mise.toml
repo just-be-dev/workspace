@@ -28,6 +28,10 @@ zprofile = "shims"
 
 [bootstrap.hooks.post-tools]
 run = '''
+# Pi defaults/preferences are machine-local. Seed once; migrate our old shared
+# settings symlink without overwriting existing choices.
+sh "${MISE_PROJECT_ROOT:-$PWD}/pi/seed-settings.sh" || exit 1
+
 # Herdr plugins. `herdr plugin install/link` needs a running Herdr server, so if
 # none is up start a transient headless one to register them (persists on disk),
 # then stop it. Must never fail the bootstrap.
@@ -110,9 +114,9 @@ fi
 "~/.config/fish/conf.d" = { source = "fish/conf.d", mode = "symlink-each" }
 "~/.config/ghui/config.json" = "ghui/config.json"
 "~/.config/hunk/config.toml" = "hunk/config.toml"
-# pi: non-secret config only (auth.json, sessions/, etc. stay untracked).
+# pi: settings.json is seeded by post-tools above, not symlinked, so model
+# defaults and preferences can differ per machine. Secrets/runtime stay local.
 # extensions uses symlink-each to overlay (leaves e.g. omarchy-system-theme.ts).
-"~/.pi/agent/settings.json" = "pi/agent/settings.json"
 # Built-in MCP server config (OAuth tokens live in untracked mcp-auth.json).
 "~/.pi/agent/mcp.json" = "pi/agent/mcp.json"
 "~/.pi/agent/extensions" = { source = "pi/agent/extensions", mode = "symlink-each" }
