@@ -13,6 +13,7 @@
     "npm:pi-lens",
     "npm:@plannotator/pi-extension",
     "npm:@injaneity/pi-computer-use",
-    "npm:pi-subagent-manager"
+    "npm:pi-subagent-manager",
+    "npm:pi-sub-anthropic"
   ]
 }

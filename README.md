@@ -21,7 +21,7 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `ghostty/config`    | [Ghostty](https://ghostty.org) | post-tools hook (`brew --cask`) | `~/.config/ghostty/config` (macOS only) |
 | `ghui/config.json`  | [ghui](https://github.com/kitlangton/ghui) | `mise/workspace.toml` -> `npm:@kitlangton/ghui` | `~/.config/ghui/config.json` |
 | `hunk/config.toml`  | [hunk](https://github.com/modem-dev/hunk) | `mise/workspace.toml` -> `hunk` | `~/.config/hunk/config.toml` |
-| `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi) settings seed | post-tools hook -> `pi/seed-settings.sh` | copied once to `~/.pi/agent/settings.json` (machine-local) |
+| `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi) preferences seed + shared package list | post-tools hook -> `pi/seed-settings.sh` | preferences copied once; packages synced on every bootstrap |
 | `pi/agent/mcp.json`      | pi built-in MCP servers | (config only) | `~/.pi/agent/mcp.json` |
 | `pi/agent/extensions/`   | pi extensions | (config only) | `~/.pi/agent/extensions` (overlay) |
 | `skills/effect-setup/`   | [agent skill](https://github.com/anthropics/skills) | (config only) | `~/.agents/skills/effect-setup` |
@@ -58,10 +58,11 @@ omarchy's siblings untouched:
   omarchy's managed config is left alone; on macOS the post-tools hook copies
   ours in.
 
-**pi** is the agent harness. Its tracked config is a `settings.json` seed
-(preferences + package list), `mcp.json` (built-in MCP servers), and the
+**pi** is the agent harness. Its tracked config is a `settings.json` preferences
+seed and authoritative package list, `mcp.json` (built-in MCP servers), and the
 `extensions/` directory. The live settings file is machine-local, not symlinked;
-MCP config and extensions remain shared. Secrets and runtime state — `auth.json`,
+bootstrap reconciles only its `packages` field with the repo. MCP config and
+loose extension files remain symlinked. Secrets and runtime state — `auth.json`,
 `mcp-auth.json`, `sessions/`, `npm/`, `trust.json` — stay in `~/.pi/agent/` and are
 never tracked.
 
@@ -72,16 +73,25 @@ never tracked.
 - The bootstrap seeds `~/.pi/agent/settings.json` with **Opus 5.5**
   (`anthropic/claude-opus-5-5`) only if no settings exist. It also converts the
   old workspace settings symlink to a local file, preserving its contents.
-  Existing local settings are never overwritten on reruns.
+  On reruns, only `packages` is reconciled; existing defaults and all other
+  preferences are preserved. Unrelated settings symlinks are left alone.
 - On the personal machine, the local default is **GPT 6.1**
   (`openai-codex/gpt-6.1-sol`). Work machines keep the Opus seed. To change a
   machine's default, open `/model` and press **Ctrl+S** on the desired model.
   Resuming a session restores that session's recorded model instead.
-- Preferences and package selections are now local too. Change them through
-  `/settings`, the local JSON file, or `pi install`; subsequent seed changes
-  do not automatically sync into existing settings.
+- Preferences remain local. Change them through `/settings` or the local JSON
+  file; later seed changes do not overwrite existing preferences.
+- **Packages are shared.** Add, remove, pin or filter packages in the `packages`
+  array of `pi/agent/settings.json`, then run the sync command below on each
+  machine after pulling. The repo list replaces the local list, including
+  removals; installed package files remain machine-local. Pi resolves missing
+  declared packages on its next normal startup (not in offline mode).
+- `pi install` still edits only the live settings file. To keep an installation
+  shared, also record its package declaration in `pi/agent/settings.json`.
+  Local-only package declarations are removed by the next bootstrap sync.
 
-For an existing checkout, migrate settings without running the full bootstrap:
+For an existing checkout, seed/migrate settings and sync packages without
+running the full bootstrap (Node required):
 
 ```sh
 sh pi/seed-settings.sh
@@ -123,7 +133,8 @@ The bootstrap then converges the normal mise parts:
 2. applies `[dotfiles]` where targets are missing or already managed,
 3. confirms the global tools are installed and runs the post-tools hook:
    installs fish, installs Ghostty on macOS if missing, installs/links Herdr
-   plugins, copies the Ghostty config, and seeds/migrates machine-local Pi settings.
+   plugins, copies the Ghostty config, seeds/migrates local Pi preferences, and
+   syncs the shared Pi package list.
 
 If a dotfile target is reported as `differs`, resolve it explicitly after
 reviewing the file. For unattended runs set `WORKSPACE_ASSUME_YES=1` to skip

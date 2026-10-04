@@ -1,8 +1,8 @@
 import { afterEach, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { existsSync, lstatSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const script = resolve(import.meta.dir, "../seed-settings.sh");
 const source = resolve(import.meta.dir, "../agent/settings.json");
@@ -12,8 +12,8 @@ function fixture() {
 	dirs.push(dir);
 	return { dir, target: join(dir, "settings.json") };
 }
-function seed(dir: string) {
-	const result = spawnSync("sh", [script, dir], { encoding: "utf8" });
+function seed(dir: string, bootstrap = script) {
+	const result = spawnSync("sh", [bootstrap, dir], { encoding: "utf8" });
 	expect(result.stderr).toBe("");
 	expect(result.status).toBe(0);
 }
@@ -33,13 +33,24 @@ test("new installs get a local file with Opus 5.5", () => {
 	expect(readFileSync(target, "utf8")).toBe(readFileSync(source, "utf8"));
 });
 
-test("existing machine-local settings survive repeated bootstrap", () => {
+test("bootstrap syncs packages while preserving every machine-local preference", () => {
 	const { dir, target } = fixture();
-	const local = '{"defaultProvider":"openai-codex","defaultModel":"gpt-6.1-sol"}\n';
-	writeFileSync(target, local);
+	const local = {
+		defaultProvider: "openai-codex", defaultModel: "gpt-6.1-sol",
+		defaultThinkingLevel: "max", theme: "system", lastChangelogVersion: "local",
+		compaction: { enabled: false }, extensions: ["./local-extension.ts"],
+		packages: ["npm:local-only"],
+	};
+	writeFileSync(target, JSON.stringify(local));
+	chmodSync(target, 0o600);
 	seed(dir);
+	const synced = readFileSync(target, "utf8");
+	expect(JSON.parse(synced)).toEqual({
+		...local, packages: JSON.parse(readFileSync(source, "utf8")).packages,
+	});
+	expect(statSync(target).mode & 0o777).toBe(0o600);
 	seed(dir);
-	expect(readFileSync(target, "utf8")).toBe(local);
+	expect(readFileSync(target, "utf8")).toBe(synced);
 });
 
 test("the old workspace symlink migrates without changing shared settings", () => {
@@ -71,4 +82,76 @@ test("an unrelated broken symlink is not clobbered", () => {
 	seed(dir);
 	expect(lstatSync(target).isSymbolicLink()).toBe(true);
 	expect(existsSync(target)).toBe(false);
+});
+
+function workspaceFixture(packages: unknown) {
+	const { dir, target } = fixture();
+	const workspace = join(dir, "workspace", "pi");
+	mkdirSync(join(workspace, "agent"), { recursive: true });
+	const bootstrap = join(workspace, "seed-settings.sh");
+	const manifest = join(workspace, "agent", "settings.json");
+	copyFileSync(script, bootstrap);
+	const sync = join(dirname(script), "sync-packages.mjs");
+	copyFileSync(sync, join(workspace, "sync-packages.mjs"));
+	writeFileSync(manifest, JSON.stringify({ defaultModel: "shared-default", packages }));
+	return { dir, target, bootstrap, manifest };
+}
+
+test("repo package additions, removals and resource filters reach existing machines", () => {
+	const f = workspaceFixture(["npm:first"]);
+	writeFileSync(f.target, JSON.stringify({ defaultModel: "local", packages: [] }));
+	seed(f.dir, f.bootstrap);
+	expect(JSON.parse(readFileSync(f.target, "utf8")).packages).toEqual(["npm:first"]);
+	const packages = [{ source: "npm:second@1.0.0", extensions: ["index.ts"], skills: [] }];
+	writeFileSync(f.manifest, JSON.stringify({ defaultModel: "changed-shared-default", packages }));
+	seed(f.dir, f.bootstrap);
+	expect(JSON.parse(readFileSync(f.target, "utf8"))).toEqual({ defaultModel: "local", packages });
+	expect(JSON.parse(readFileSync(f.manifest, "utf8")).defaultModel).toBe("changed-shared-default");
+	writeFileSync(f.manifest, JSON.stringify({ packages: [] }));
+	seed(f.dir, f.bootstrap);
+	expect(JSON.parse(readFileSync(f.target, "utf8")).packages).toEqual([]);
+});
+
+test("matching package lists do not rewrite local formatting", () => {
+	const f = workspaceFixture(["npm:first"]);
+	const local = '{ "theme": "system", "packages": ["npm:first"] }\n';
+	writeFileSync(f.target, local);
+	seed(f.dir, f.bootstrap);
+	expect(readFileSync(f.target, "utf8")).toBe(local);
+});
+
+test("malformed local settings fail without overwriting the file", () => {
+	const f = workspaceFixture(["npm:first"]);
+	const local = '{ "defaultModel":';
+	writeFileSync(f.target, local);
+	const result = spawnSync("sh", [f.bootstrap, f.dir], { encoding: "utf8" });
+	expect(result.status).not.toBe(0);
+	expect(readFileSync(f.target, "utf8")).toBe(local);
+});
+
+test("invalid shared packages do not seed a new settings file", () => {
+	const f = workspaceFixture([{}]);
+	const result = spawnSync("sh", [f.bootstrap, f.dir], { encoding: "utf8" });
+	expect(result.status).not.toBe(0);
+	expect(existsSync(f.target)).toBe(false);
+});
+
+test("sync uses PI_CODING_AGENT_DIR when no directory argument is given", () => {
+	const f = workspaceFixture(["npm:first"]);
+	const result = spawnSync("sh", [f.bootstrap], {
+		encoding: "utf8", env: { ...process.env, PI_CODING_AGENT_DIR: f.dir },
+	});
+	expect(result.status).toBe(0);
+	expect(JSON.parse(readFileSync(f.target, "utf8")).packages).toEqual(["npm:first"]);
+});
+
+test("invalid shared packages fail without overwriting local settings", () => {
+	for (const packages of ["not-an-array", [null], [{}], [""]]) {
+		const f = workspaceFixture(packages);
+		const local = '{"defaultModel":"local","packages":["npm:keep"]}';
+		writeFileSync(f.target, local);
+		const result = spawnSync("sh", [f.bootstrap, f.dir], { encoding: "utf8" });
+		expect(result.status).not.toBe(0);
+		expect(readFileSync(f.target, "utf8")).toBe(local);
+	}
 });
