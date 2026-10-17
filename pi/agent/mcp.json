@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "linear": {
-      "url": "https://mcp.linear.app/mcp",
-      "description": "Linear issue tracker: issues, projects, comments, cycles, and teams"
+    "executor": {
+      "url": "https://executor.sh/just-be/mcp",
+      "description": "Executor integration catalog: shared MCP/OpenAPI/GraphQL connections (e.g. email, Google) with per-tool policies"
     }
   }
 }
