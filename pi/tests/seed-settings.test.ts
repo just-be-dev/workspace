@@ -84,18 +84,74 @@ test("an unrelated broken symlink is not clobbered", () => {
 	expect(existsSync(target)).toBe(false);
 });
 
-function workspaceFixture(packages: unknown) {
+function workspaceFixture(packages: unknown, mcpServers: unknown = {}) {
 	const { dir, target } = fixture();
 	const workspace = join(dir, "workspace", "pi");
 	mkdirSync(join(workspace, "agent"), { recursive: true });
 	const bootstrap = join(workspace, "seed-settings.sh");
 	const manifest = join(workspace, "agent", "settings.json");
+	const mcpManifest = join(workspace, "agent", "mcp.json");
 	copyFileSync(script, bootstrap);
-	const sync = join(dirname(script), "sync-packages.mjs");
-	copyFileSync(sync, join(workspace, "sync-packages.mjs"));
+	for (const file of ["local-config.mjs", "sync-packages.mjs", "sync-mcp.mjs"]) {
+		copyFileSync(join(dirname(script), file), join(workspace, file));
+	}
 	writeFileSync(manifest, JSON.stringify({ defaultModel: "shared-default", packages }));
-	return { dir, target, bootstrap, manifest };
+	writeFileSync(mcpManifest, JSON.stringify({ mcpServers }));
+	return { dir, target, bootstrap, manifest, mcpManifest, mcpTarget: join(dir, "mcp.json") };
 }
+
+const readJson = (path: string) => JSON.parse(readFileSync(path, "utf8"));
+const shared = { url: "https://shared.example/mcp", description: "shared" };
+
+test("new installs get a local MCP file with the repo's servers", () => {
+	const { dir } = fixture();
+	seed(dir);
+	const target = join(dir, "mcp.json");
+	expect(lstatSync(target).isSymbolicLink()).toBe(false);
+	const servers = readJson(resolve(import.meta.dir, "../agent/mcp.json")).mcpServers;
+	expect(readJson(target)).toEqual({ mcpServers: servers, workspaceManagedServers: Object.keys(servers) });
+});
+
+test("the old MCP symlink migrates without changing the shared file", () => {
+	const f = workspaceFixture([], { shared });
+	const before = readFileSync(f.mcpManifest, "utf8");
+	symlinkSync(f.mcpManifest, f.mcpTarget);
+	seed(f.dir, f.bootstrap);
+	expect(lstatSync(f.mcpTarget).isSymbolicLink()).toBe(false);
+	expect(readFileSync(f.mcpManifest, "utf8")).toBe(before);
+	expect(readJson(f.mcpTarget)).toEqual({ mcpServers: { shared }, workspaceManagedServers: ["shared"] });
+});
+
+test("MCP sync keeps machine-only servers and local toggles, and propagates removals", () => {
+	const f = workspaceFixture([], { shared, gone: { url: "https://gone.example/mcp" } });
+	const linear = { url: "https://mcp.linear.app/mcp" };
+	writeFileSync(f.mcpTarget, JSON.stringify({
+		autoEnableCodemode: false,
+		mcpServers: { linear, shared: { url: "https://old.example/mcp", enabled: false, exposure: "direct" } },
+	}));
+	seed(f.dir, f.bootstrap);
+	expect(readJson(f.mcpTarget)).toEqual({
+		autoEnableCodemode: false,
+		mcpServers: { linear, shared: { ...shared, enabled: false, exposure: "direct" }, gone: { url: "https://gone.example/mcp" } },
+		workspaceManagedServers: ["shared", "gone"],
+	});
+	const synced = readFileSync(f.mcpTarget, "utf8");
+	seed(f.dir, f.bootstrap);
+	expect(readFileSync(f.mcpTarget, "utf8")).toBe(synced);
+	writeFileSync(f.mcpManifest, JSON.stringify({ mcpServers: { shared } }));
+	seed(f.dir, f.bootstrap);
+	expect(readJson(f.mcpTarget).mcpServers).toEqual({ linear, shared: { ...shared, enabled: false, exposure: "direct" } });
+	expect(readJson(f.mcpTarget).workspaceManagedServers).toEqual(["shared"]);
+});
+
+test("malformed local MCP config fails without overwriting the file", () => {
+	const f = workspaceFixture([], { shared });
+	const local = '{ "mcpServers":';
+	writeFileSync(f.mcpTarget, local);
+	const result = spawnSync("sh", [f.bootstrap, f.dir], { encoding: "utf8" });
+	expect(result.status).not.toBe(0);
+	expect(readFileSync(f.mcpTarget, "utf8")).toBe(local);
+});
 
 test("repo package additions, removals and resource filters reach existing machines", () => {
 	const f = workspaceFixture(["npm:first"]);

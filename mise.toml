@@ -28,8 +28,9 @@ zprofile = "shims"
 
 [bootstrap.hooks.post-tools]
 run = '''
-# Pi defaults/preferences stay machine-local. Seed once, migrate legacy links,
-# and reconcile the repo-managed package list on every bootstrap.
+# Pi defaults/preferences and MCP config stay machine-local. Seed once, migrate
+# legacy links, and reconcile the repo-managed packages and MCP servers on
+# every bootstrap.
 sh "${MISE_PROJECT_ROOT:-$PWD}/pi/seed-settings.sh" || exit 1
 
 # Herdr plugins. `herdr plugin install/link` needs a running Herdr server, so if
@@ -114,11 +115,10 @@ fi
 "~/.config/fish/conf.d" = { source = "fish/conf.d", mode = "symlink-each" }
 "~/.config/ghui/config.json" = "ghui/config.json"
 "~/.config/hunk/config.toml" = "hunk/config.toml"
-# pi: post-tools seeds local settings and syncs shared packages on every run.
-# Model defaults/preferences and secrets/runtime stay machine-local.
+# pi: post-tools seeds local settings.json + mcp.json and syncs shared packages
+# and MCP servers on every run (not symlinked, so machine-only servers can live
+# beside the shared ones). Secrets/runtime (e.g. mcp-auth.json) stay local.
 # extensions uses symlink-each to overlay (leaves e.g. omarchy-system-theme.ts).
-# Built-in MCP server config (OAuth tokens live in untracked mcp-auth.json).
-"~/.pi/agent/mcp.json" = "pi/agent/mcp.json"
 "~/.pi/agent/extensions" = { source = "pi/agent/extensions", mode = "symlink-each" }
 # Skills are directory-shaped packages. Link each skill directory explicitly:
 # recursive symlink-each can follow an existing skill-directory symlink and create

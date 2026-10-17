@@ -22,7 +22,7 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `ghui/config.json`  | [ghui](https://github.com/kitlangton/ghui) | `mise/workspace.toml` -> `npm:@kitlangton/ghui` | `~/.config/ghui/config.json` |
 | `hunk/config.toml`  | [hunk](https://github.com/modem-dev/hunk) | `mise/workspace.toml` -> `hunk` | `~/.config/hunk/config.toml` |
 | `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi) preferences seed + shared package list | post-tools hook -> `pi/seed-settings.sh` | preferences copied once; packages synced on every bootstrap |
-| `pi/agent/mcp.json`      | pi built-in MCP servers | (config only) | `~/.pi/agent/mcp.json` |
+| `pi/agent/mcp.json`      | pi built-in MCP servers (shared) | post-tools hook -> `pi/seed-settings.sh` | shared servers synced into a local `~/.pi/agent/mcp.json` |
 | `pi/agent/extensions/`   | pi extensions | (config only) | `~/.pi/agent/extensions` (overlay) |
 | `skills/effect-setup/`   | [agent skill](https://github.com/anthropics/skills) | (config only) | `~/.agents/skills/effect-setup` |
 | `skills/mise-setup/`     | agent skill | (config only) | `~/.agents/skills/mise-setup` |
@@ -59,10 +59,10 @@ omarchy's siblings untouched:
   ours in.
 
 **pi** is the agent harness. Its tracked config is a `settings.json` preferences
-seed and authoritative package list, `mcp.json` (built-in MCP servers), and the
-`extensions/` directory. The live settings file is machine-local, not symlinked;
-bootstrap reconciles only its `packages` field with the repo. MCP config and
-loose extension files remain symlinked. Secrets and runtime state — `auth.json`,
+seed and authoritative package list, `mcp.json` (shared built-in MCP servers),
+and the `extensions/` directory. The live settings and MCP files are
+machine-local, not symlinked; bootstrap reconciles only the `packages` field and
+the shared MCP servers with the repo. Loose extension files remain symlinked. Secrets and runtime state — `auth.json`,
 `mcp-auth.json`, `sessions/`, `npm/`, `trust.json` — stay in `~/.pi/agent/` and are
 never tracked.
 
@@ -90,7 +90,24 @@ never tracked.
   shared, also record its package declaration in `pi/agent/settings.json`.
   Local-only package declarations are removed by the next bootstrap sync.
 
-For an existing checkout, seed/migrate settings and sync packages without
+### Pi MCP servers
+
+- **Shared servers** live in `pi/agent/mcp.json` and reach every machine on the
+  next bootstrap. Each repo entry replaces the local definition, but local
+  `enabled`, `exposure`, and `toolExposure` (what `/mcp` saves) are kept.
+  Removing an entry from the repo removes it locally too; the local file's
+  `workspaceManagedServers` key records which names came from the repo.
+- **Machine-only servers** (e.g. Linear on the work machine) go straight into the
+  local file and are never touched by the sync:
+
+  ```sh
+  pi mcp add linear --url https://mcp.linear.app/mcp
+  ```
+
+  A local server with the same name as a shared one is replaced by the shared
+  definition, so give machine-only servers distinct names.
+
+For an existing checkout, seed/migrate settings and MCP config and sync packages without
 running the full bootstrap (Node required):
 
 ```sh
