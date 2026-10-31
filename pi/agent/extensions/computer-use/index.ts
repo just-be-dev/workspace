@@ -101,7 +101,9 @@ export default function (pi: ExtensionAPI) {
 
 	const { version, entry } = loaded;
 	pi.registerMcpServer(SERVER_NAME, {
-		command: process.execPath,
+		// Not process.execPath: pi ships as a compiled binary, so that would launch
+		// another pi session with proxy.mjs as its prompt. Use the plugin's own Node.
+		command: entry.env?.NODE_REPL_NODE_PATH ?? entry.command,
 		args: [PROXY, entry.command, ...(entry.args ?? [])],
 		env: { ...entry.env, COMPUTER_USE_APPROVAL_SOCKET: SOCKET_PATH },
 		// Computer-use actions (screenshots, app launches, approvals) can be slow.
