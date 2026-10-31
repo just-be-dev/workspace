@@ -13,9 +13,8 @@ dotfiles.default_mode = "symlink"
 # which rejects repo-qualified names and would report them missing forever.
 "pacman:fish" = "latest"
 "pacman:omarchy-fish" = "latest"
-# Ghostty is installed in the post-tools hook below. Avoid mise's brew-cask
-# backend here: Ghostty's DMG includes /Applications symlink, which can make
-# mise recurse into Xcode.app's Ruby header self-link while copying/extracting.
+# Rex (the macOS terminal) is installed in the post-tools hook below: it has no
+# Homebrew cask, so the hook pulls the latest DMG from Rex's Sparkle appcast.
 
 # Interactive rc files get "activate" (full env); login profiles get "shims" so
 # non-interactive sessions still resolve tools without the activate hook.
@@ -79,10 +78,25 @@ else
   echo "skip fish: use pacman (Arch/Omarchy) or install Homebrew (macOS)"
 fi
 
-# Ghostty config, macOS only (Linux keeps omarchy's managed config).
+# Rex terminal + its config, macOS only (Linux keeps omarchy's Ghostty setup).
+# Rex embeds Ghostty's renderer and reads ~/.config/ghostty/config, so the
+# Ghostty-format config below still applies. Rex self-updates via Sparkle after
+# the first install. Must never fail the bootstrap.
 if [ "$(uname)" = "Darwin" ]; then
-  if [ ! -d /Applications/Ghostty.app ] && command -v brew >/dev/null 2>&1; then
-    brew install --cask ghostty
+  if ! ls -d /Applications/Rex*.app >/dev/null 2>&1; then
+    rex_appcast="https://blob.superlogical.com/public/rex-app/preview/appcast.xml"
+    rex_dmg_url=$(curl -fsSL "$rex_appcast" | grep -o '<enclosure[^>]*url="[^"]*\.dmg"' | head -n 1 | sed 's/.*url="\([^"]*\)"/\1/')
+    rex_tmp=$(mktemp -d)
+    if [ -n "$rex_dmg_url" ] && curl -fsSL -o "$rex_tmp/rex.dmg" "$rex_dmg_url" &&
+      hdiutil attach -nobrowse -quiet -mountpoint "$rex_tmp/mnt" "$rex_tmp/rex.dmg"; then
+      for rex_app in "$rex_tmp"/mnt/*.app; do
+        [ -d "$rex_app" ] && cp -R "$rex_app" /Applications/
+      done
+      hdiutil detach -quiet "$rex_tmp/mnt" || true
+    else
+      echo "warn: Rex install failed; download it from https://rex.superlogical.com" >&2
+    fi
+    rm -rf "$rex_tmp"
   fi
   mkdir -p "$HOME/.config/ghostty"
   ghostty_source="${MISE_PROJECT_ROOT:-$PWD}/ghostty/config"
@@ -109,7 +123,7 @@ fi
 "~/.config/nvim/lua/config"  = { source = "nvim/lua/config", mode = "symlink-each" }
 "~/.config/nvim/lua/plugins" = { source = "nvim/lua/plugins", mode = "symlink-each" }
 # ghostty NOT linked: [dotfiles] can't be OS-scoped and Linux keeps omarchy's
-# config. Copied on macOS via the post-tools hook above.
+# config. Copied on macOS (where Rex reads it) via the post-tools hook above.
 # fish conf.d: symlink-each overlays our snippets onto omarchy-fish's managed
 # conf.d without clobbering the files it drops there.
 "~/.config/fish/conf.d" = { source = "fish/conf.d", mode = "symlink-each" }
