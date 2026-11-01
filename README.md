@@ -26,10 +26,11 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `pi/agent/extensions/`   | pi extensions | (config only) | `~/.pi/agent/extensions` (overlay) |
 | `skills/effect-setup/`   | [agent skill](https://github.com/anthropics/skills) | (config only) | `~/.agents/skills/effect-setup` |
 | `skills/mise-setup/`     | agent skill | (config only) | `~/.agents/skills/mise-setup` |
+| `skills/agent-desktop/`  | agent skill: computer use via [agent-desktop](https://github.com/vercel-labs/agent-desktop) | `mise/workspace.toml` -> `github:vercel-labs/agent-desktop` | `~/.agents/skills/agent-desktop` |
 
 ### Global tools
 
-The CLI tools (herdr, hunk, ghui, pi, stylua, atuin, and Rust) are declared
+The CLI tools (herdr, hunk, ghui, pi, agent-desktop, stylua, atuin, and Rust) are declared
 in [`mise/workspace.toml`](./mise/workspace.toml). The main
 [`mise.toml`](./mise.toml) symlinks that file to
 `~/.config/mise/conf.d/workspace.toml`, making those tools global instead of

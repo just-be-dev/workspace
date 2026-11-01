@@ -139,5 +139,7 @@ fi
 # self-referential SKILL.md links inside the source tree.
 "~/.agents/skills/effect-setup" = "skills/effect-setup"
 "~/.agents/skills/mise-setup" = "skills/mise-setup"
+"~/.agents/skills/agent-desktop" = "skills/agent-desktop"
 "~/.claude/skills/effect-setup" = "skills/effect-setup"
 "~/.claude/skills/mise-setup" = "skills/mise-setup"
+"~/.claude/skills/agent-desktop" = "skills/agent-desktop"

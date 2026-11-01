@@ -7,6 +7,7 @@ hunk = "latest"                                  # aqua:modem-dev/hunk — revie
 stylua = "latest"                                # Lua formatter for nvim config
 atuin = "latest"                                  # shell history sync/search
 pitchfork = "latest"                             # daemonize/supervise background processes
+"github:vercel-labs/agent-desktop" = "latest"    # computer use via the OS accessibility tree (skill: skills/agent-desktop)
 node = "26.12.1"
 rust = "1.90.0"                                  # required to build herdr-projects (minimum 1.89)
 

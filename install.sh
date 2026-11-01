@@ -61,8 +61,10 @@ adopt_matching_dotfile() {
 
 adopt_matching_dotfile "$REPO_DIR/skills/effect-setup" "$HOME/.agents/skills/effect-setup"
 adopt_matching_dotfile "$REPO_DIR/skills/mise-setup" "$HOME/.agents/skills/mise-setup"
+adopt_matching_dotfile "$REPO_DIR/skills/agent-desktop" "$HOME/.agents/skills/agent-desktop"
 adopt_matching_dotfile "$REPO_DIR/skills/effect-setup" "$HOME/.claude/skills/effect-setup"
 adopt_matching_dotfile "$REPO_DIR/skills/mise-setup" "$HOME/.claude/skills/mise-setup"
+adopt_matching_dotfile "$REPO_DIR/skills/agent-desktop" "$HOME/.claude/skills/agent-desktop"
 
 # Run the normal convergent bootstrap. Do not force dotfiles here: reruns should
 # behave like `mise bootstrap`, leaving conflicts for the user to resolve
