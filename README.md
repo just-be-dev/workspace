@@ -24,6 +24,7 @@ Uses the fantasic [`mise`](https://mise.jdx.dev) to bootstrap everything.
 | `pi/agent/settings.json` | [pi](https://github.com/earendil-works/pi) preferences seed + shared package list | post-tools hook -> `pi/seed-settings.sh` | preferences copied once; packages synced on every bootstrap |
 | `pi/agent/mcp.json`      | pi built-in MCP servers (shared) | post-tools hook -> `pi/seed-settings.sh` | shared servers synced into a local `~/.pi/agent/mcp.json` |
 | `pi/agent/extensions/`   | pi extensions | (config only) | `~/.pi/agent/extensions` (overlay) |
+| `pi/agent/extensions/pi-sub-anthropic/` | local fork of [pi-sub-anthropic](https://github.com/spksoft/pi-sub-anthropic) (prompt-caching fix, see its `FORK.md`); not in `packages` | (config only) | `~/.pi/agent/extensions/pi-sub-anthropic` |
 | `skills/effect-setup/`   | [agent skill](https://github.com/anthropics/skills) | (config only) | `~/.agents/skills/effect-setup` |
 | `skills/mise-setup/`     | agent skill | (config only) | `~/.agents/skills/mise-setup` |
 | `skills/agent-desktop/`  | agent skill: computer use via [agent-desktop](https://github.com/vercel-labs/agent-desktop) | `mise/workspace.toml` -> `github:vercel-labs/agent-desktop` | `~/.agents/skills/agent-desktop` |
