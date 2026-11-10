@@ -45,6 +45,10 @@
 
 import type { ThinkingLevelMap } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { appendFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { createCacheMonitor } from "./cache-health.ts";
 import { loginAnthropic, refreshAnthropicToken, type PiSubOAuthCredentials } from "./oauth.ts";
 import { createPiSubAnthropicStream } from "./stream.ts";
 
@@ -222,6 +226,43 @@ export default function (pi: ExtensionAPI) {
 			thinkingLevelMap: m.thinkingLevelMap,
 			compat: m.compat as any,
 		})),
+	});
+
+	// Prompt-cache health (see cache-health.ts). One monitor per runtime, and pi
+	// replaces the runtime per session, so state never leaks across sessions.
+	const cache = createCacheMonitor();
+	const CACHE_STATUS = "pi-sub-cache";
+	pi.on("message_end", (event, ctx) => {
+		const message = event.message;
+		if (message.role !== "assistant" || message.provider !== PROVIDER_ID) return;
+		const wasUnhealthy = cache.unhealthy;
+		const alert = cache.observe({
+			model: message.model,
+			usage: message.usage,
+			timestamp: message.timestamp ?? Date.now(),
+		});
+		if (alert) {
+			// Headless runs (subagents, print mode) have no UI, so every alert is
+			// also logged where it can be found afterwards.
+			try {
+				appendFileSync(
+					join(homedir(), ".pi", "agent", "cache-health.log"),
+					`${JSON.stringify({
+						time: new Date().toISOString(),
+						kind: alert.kind,
+						model: message.model,
+						usage: alert.sample.usage,
+						session: ctx.sessionManager?.getSessionFile?.(),
+						cwd: process.cwd(),
+					})}\n`,
+				);
+			} catch {}
+			if (ctx.hasUI) ctx.ui.notify(`[pi-sub-anthropic] ${alert.message}`, "warning");
+			else process.stderr.write(`[pi-sub-anthropic] ${alert.message}\n`);
+		}
+		if (ctx.hasUI && cache.unhealthy !== wasUnhealthy) {
+			ctx.ui.setStatus(CACHE_STATUS, cache.unhealthy ? ctx.ui.theme.fg("error", "cache broken") : undefined);
+		}
 	});
 
 	if (debug) {

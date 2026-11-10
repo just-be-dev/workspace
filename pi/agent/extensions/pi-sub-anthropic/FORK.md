@@ -17,6 +17,21 @@ provider registers twice.
   promoted to a cached text block, as pi's built-in anthropic provider does, and
   the newest assistant message gets a second breakpoint so the next request
   still has a stable prefix to hit when the transient tail changes.
+- **Cache health monitor** (`cache-health.ts`, wired in `index.ts`). Watches
+  the usage on every response. It warns in the UI, adds a red "cache broken"
+  footer status, and logs to `~/.pi/agent/cache-health.log` (headless runs and
+  subagents print to stderr instead of the UI) when:
+  - a request sends more than 8k uncached input tokens (healthy is about 2-4,
+    since the tail is always a breakpoint), or
+  - two warm requests in a row read less than half the previous prompt from
+    cache (the prefix is changing between turns).
+  Replayed over ~35k recorded requests: it fired on the first request of 294 of
+  352 pre-fix sessions and never on healthy ones.
+- **Regression tests** in `pi/tests/pi-sub-anthropic-cache.test.ts` send
+  agent-loop requests through the real stream with a fake `fetch` and check
+  the breakpoint layout, including that each request reads the previous one
+  from cache through its last assistant turn. Reverting either half of the
+  caching fix fails them. Run `bun test pi/tests` after touching `stream.ts`.
 
 ## Updating from upstream
 
