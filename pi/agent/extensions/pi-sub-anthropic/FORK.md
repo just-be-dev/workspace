@@ -1,7 +1,7 @@
 # pi-sub-anthropic (local fork)
 
 Vendored from [`pi-sub-anthropic`](https://github.com/spksoft/pi-sub-anthropic)
-**0.1.10** (MIT, see `LICENSE`) so `pi update` can't replace it. It loads as a
+**0.1.11** (MIT, see `LICENSE`) so `pi update` can't replace it. It loads as a
 plain extension directory, so it must NOT also be listed in `packages`, or the
 provider registers twice.
 
@@ -35,7 +35,7 @@ provider registers twice.
 
 ## Updating from upstream
 
-Diff a new upstream release against 0.1.10, carry its changes over by hand, keep
+Diff a new upstream release against 0.1.11, carry its changes over by hand, keep
 the fix above (or drop it if upstream fixed the same bug), and bump the version
 at the top of this file. Restart pi afterwards; `/reload` doesn't re-import
 providers.
