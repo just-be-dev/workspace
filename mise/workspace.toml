@@ -8,6 +8,7 @@ stylua = "latest"                                # Lua formatter for nvim config
 atuin = "latest"                                  # shell history sync/search
 pitchfork = "latest"                             # daemonize/supervise background processes
 "github:vercel-labs/agent-desktop" = "latest"    # computer use via the OS accessibility tree (skill: skills/agent-desktop)
+ripgrep = "latest"                               # rg on the global PATH: context-mode's ctx_execute sandbox can't see pi's bundled ~/.pi/agent/bin/rg
 node = "26.12.1"
 rust = "1.90.0"                                  # required to build herdr-projects (minimum 1.89)
 
