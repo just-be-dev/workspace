@@ -66,6 +66,13 @@ if command -v herdr >/dev/null 2>&1; then
   fi
 fi
 
+# Git alias used by the `grmb` fish abbreviation: delete local branches whose
+# upstream is gone. Use delta as the pager when it's installed.
+git config --global alias.rm-merged "!git branch --format '%(refname:short) %(upstream:track)' | awk '\$2 == \"[gone]\" { print \$1 }' | xargs -r git branch -D"
+if command -v delta >/dev/null 2>&1 && [ -z "$(git config --global core.pager)" ]; then
+  git config --global core.pager delta
+fi
+
 # fish shell (no mise backend). omarchy-fish on Arch layers omarchy's fish config;
 # Homebrew elsewhere.
 if command -v pacman >/dev/null 2>&1; then
@@ -127,6 +134,7 @@ fi
 # fish conf.d: symlink-each overlays our snippets onto omarchy-fish's managed
 # conf.d without clobbering the files it drops there.
 "~/.config/fish/conf.d" = { source = "fish/conf.d", mode = "symlink-each" }
+"~/.config/fish/functions" = { source = "fish/functions", mode = "symlink-each" }
 "~/.config/ghui/config.json" = "ghui/config.json"
 "~/.config/hunk/config.toml" = "hunk/config.toml"
 # pi: post-tools seeds local settings.json + mcp.json and syncs shared packages

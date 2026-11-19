@@ -44,3 +44,9 @@ abbr -a mi mise install
 
 abbr -a h herdr
 abbr -a f fzf
+
+# `!!` expands to the previous command, e.g. `sudo !!` (replaces omf bang-bang)
+function _abbr_last_history_item
+    echo $history[1]
+end
+abbr -a !! --position anywhere --function _abbr_last_history_item

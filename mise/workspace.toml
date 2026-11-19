@@ -18,4 +18,9 @@ gh = { version = "latest", os = ["macos"] }
 "aqua:anthropics/claude-code" = { version = "latest", os = ["macos"] }
 fzf = { version = "0.74.3", os = ["macos"] }
 lazygit = { version = "0.64.1", os = ["macos"] }
+zoxide = { version = "latest", os = ["macos"] }    # `z` (fish/conf.d/tools.fish)
+eza = { version = "latest", os = ["macos"] }       # `ls` wrapper (fish/functions/ls.fish)
+bat = { version = "latest", os = ["macos"] }       # `cat` wrapper (fish/functions/cat.fish)
+fd = { version = "latest", os = ["macos"] }
+delta = { version = "latest", os = ["macos"] }     # git pager
 "npm:@openai/codex" = "0.154.0"
