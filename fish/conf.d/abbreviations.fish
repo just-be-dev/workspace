@@ -42,7 +42,6 @@ abbr -a cb cargo build
 abbr -a mr mise run
 abbr -a mi mise install
 
-abbr -a h herdr
 abbr -a f fzf
 
 # `!!` expands to the previous command, e.g. `sudo !!` (replaces omf bang-bang)

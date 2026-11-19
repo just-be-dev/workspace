@@ -32,40 +32,6 @@ run = '''
 # every bootstrap.
 sh "${MISE_PROJECT_ROOT:-$PWD}/pi/seed-settings.sh" || exit 1
 
-# Herdr plugins. `herdr plugin install/link` needs a running Herdr server, so if
-# none is up start a transient headless one to register them (persists on disk),
-# then stop it. Must never fail the bootstrap.
-if command -v herdr >/dev/null 2>&1; then
-  herdr_plugins_dir="${MISE_PROJECT_ROOT:-$PWD}/herdr/plugins"
-  herdr_started=0
-  if ! herdr status 2>/dev/null | grep -q 'status: running'; then
-    herdr server >/dev/null 2>&1 &
-    for _ in $(seq 1 25); do
-      if herdr status 2>/dev/null | grep -q 'status: running'; then break; fi
-      sleep 0.2
-    done
-    herdr_started=1
-  fi
-  herdr plugin install nikok6/herdr-mirror --yes >/dev/null 2>&1 ||
-    echo "warn: 'herdr plugin install nikok6/herdr-mirror --yes' failed; run it yourself once herdr is running" >&2
-
-  herdr plugin install jhochenbaum/herdr-hunk-diff --yes >/dev/null 2>&1 ||
-    echo "warn: 'herdr plugin install jhochenbaum/herdr-hunk-diff --yes' failed; run it yourself once herdr is running" >&2
-
-  herdr plugin install eliasstravik/herdr-projects --yes >/dev/null 2>&1 ||
-    echo "warn: 'herdr plugin install eliasstravik/herdr-projects --yes' failed; run it yourself once herdr is running" >&2
-
-  for herdr_plugin in "$herdr_plugins_dir"/*; do
-    [ -d "$herdr_plugin" ] || continue
-    [ -f "$herdr_plugin/herdr-plugin.toml" ] || continue
-    herdr plugin link "$herdr_plugin" >/dev/null 2>&1 ||
-      echo "warn: 'herdr plugin link $herdr_plugin' failed; run it yourself once herdr is running" >&2
-  done
-  if [ "$herdr_started" = 1 ]; then
-    herdr server stop >/dev/null 2>&1 || true
-  fi
-fi
-
 # Git alias used by the `grmb` fish abbreviation: delete local branches whose
 # upstream is gone. Use delta as the pager when it's installed.
 git config --global alias.rm-merged "!git branch --format '%(refname:short) %(upstream:track)' | awk '\$2 == \"[gone]\" { print \$1 }' | xargs -r git branch -D"
@@ -120,9 +86,6 @@ fi
 # Global mise tools. `mise bootstrap` applies dotfiles before the tools step, so
 # this symlink is in place before `mise install` runs and before post-tools hooks.
 "~/.config/mise/conf.d/workspace.toml" = "mise/workspace.toml"
-"~/.config/herdr/config.toml" = "herdr/config.toml"
-"~/.config/herdr-mirror/hosts.toml" = "herdr-mirror/hosts.toml"
-"~/.config/herdr/plugins/config/jhochenbaum.hunkdiff/config.toml" = "herdr/plugin-config/jhochenbaum.hunkdiff/config.toml"
 # nvim overlays onto omarchy's base: *.lua links init.lua but skips the
 # nvim-managed *.json lockfiles; symlink-each owns our lua/config + lua/plugins
 # files, leaving omarchy's (options.lua, themes) in place.
