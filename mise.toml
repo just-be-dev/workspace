@@ -103,8 +103,11 @@ fi
 # pi: post-tools seeds local settings.json + mcp.json and syncs shared packages
 # and MCP servers on every run (not symlinked, so machine-only servers can live
 # beside the shared ones). Secrets/runtime (e.g. mcp-auth.json) stay local.
-# extensions uses symlink-each to overlay (leaves e.g. omarchy-system-theme.ts).
-"~/.pi/agent/extensions" = { source = "pi/agent/extensions", mode = "symlink-each" }
+# extensions overlay per entry (leaves e.g. omarchy-system-theme.ts). Not
+# symlink-each: it recurses through the pi-sub-anthropic directory symlink and
+# sees the source files themselves as conflicts (same trap as skills below).
+"~/.pi/agent/extensions/*.ts" = "pi/agent/extensions/*.ts"
+"~/.pi/agent/extensions/pi-sub-anthropic" = "pi/agent/extensions/pi-sub-anthropic"
 # Skills are directory-shaped packages. Link each skill directory explicitly:
 # recursive symlink-each can follow an existing skill-directory symlink and create
 # self-referential SKILL.md links inside the source tree.
